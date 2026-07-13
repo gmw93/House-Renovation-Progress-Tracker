@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>House Renovation Progress Tracker</title>
+    <!-- JSZip Library for exporting data -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --primary-color: #4a6fa5;
+            --text-color: #333333;
+            --accent-color: #ff6b6b;
+            --export-color: #2ec4b6;
+            --room-bg: #eef2f7;
+        }
+		*, *::before, *::after {
+			box-sizing: border-box;
+		}
+		.f-bold{font-weight: 600;}
+		.flx {display: flex;}
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);color: var(--text-color);
+            margin: 0; padding: 15px;
+            -webkit-tap-highlight-color: transparent;
+			font-size: 13px; word-break: break-word;
+        }
+		input, select, textarea, button {
+			font-family: inherit; font-size: inherit; color: inherit;
+		}
+        .container {
+            max-width: 800px; margin: 0 auto;
+        }
+        header {
+            text-align: center; margin-bottom: 20px;
+        }
+        header h1 {
+            font-size: 1.8rem; margin: 10px 0;
+        }
+        .input-section {
+            background: var(--card-bg);
+            padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; gap: 10px;
+        }
+		input[type="text"], input[type="number"], select {
+            flex: 1;padding: 10px; border: 1px solid #ddd; border-radius: 6px;font-size: 14px; appearance: none;
+            -webkit-appearance: none;
+        }
+		input[type="checkbox"]{
+			width: 14px; height: 14px; margin: 0; cursor: pointer; flex-shrink: 0;
+		}
+        select {
+			background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23333%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E");            background-repeat: no-repeat;
+            background-position: right 10px;
+            background-size: 1em;
+        }
+        button {
+            padding: 6px 10px; background-color: var(--primary-color); color: var(--card-bg); border: none; border-radius: 6px; cursor: pointer; 
+			transition: background 0.2s; touch-action: manipulation; 
+        }
+        button:active {
+            opacity: 0.8;
+        }
+        .houses-grid {
+			display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; width: 100%;
+		}
+		/*4 columns wide on desktop layout*/
+		.mobile-responsive-analyzer-grid {
+			display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px; margin-bottom: 14px;
+		}
+		.mobile-responsive-analyzer-grid span {
+			display: flex; flex-direction: column; font-weight: bold; color: #555;
+		}
+		.mobile-responsive-analyzer-grid input {
+			width: 100%; padding: 6px; margin-top: 4px; box-sizing: border-box;
+		}
+		/* SMARTPHONE RE-ALIGNMENT FOR DISPLAYS */
+		/* Force cards to stack elegantly into 1 flat vertical column on phones */
+		/* SMARTPHONE RE-ALIGNMENT FOR ANALYZER FORMS */
+		/* Snaps perfectly into 2 columns of 2 rows on small phone viewports */
+		/* TOUCH TARGET ACCESSIBILITY UPGRADE */
+		/* Increases sizing for finger-taps, making typing values effortless */
+        @media (max-width: 600px) {
+			.houses-grid {
+				grid-template-columns: 1fr !important; 
+				gap: 15px;
+			}
+			.mobile-responsive-analyzer-grid {
+				grid-template-columns: repeat(2, 1fr) !important; 
+				gap: 12px;
+			}			
+			.task-input-group {
+				display: flex !important;
+				flex-direction: column !important;
+				gap: 12px !important;
+				width: 100% !important;
+				box-sizing: border-box;
+			}
+			.input-row-with-media {
+				display: grid !important;
+				grid-template-columns: 3fr 1fr !important; 
+				gap: 8px !important;
+				width: 100% !important;
+				align-items: center;
+			}
+			[id^="taskTitleInput-"] {
+				grid-column: span 2 !important;
+				width: 100% !important;
+				display: block !important;
+			}
+			select[id^="lineItemInput-"] {
+				grid-column: span 2 !important; 
+				width: 100% !important;
+			}
+			.budget-input-row {
+				display: grid !important;
+				grid-template-columns: 1fr 1fr !important; /* Split price and quantity side-by-side */
+				gap: 10px !important;
+				width: 100% !important;
+				margin-top: 4px;
+			}
+			.mobile-responsive-analyzer-grid input, .house-card button, .house-card select, .task-input-group select, .task-input-group input, .task-input-group button,
+			#taskRoomSelect, #taskNumSelect, [id^="taskRoomSelect-"], [id^="taskNumSelect-"], [id^="taskTitleInput-"], [id^="lineItemInput-"] {
+				padding: 14px 10px !important; 
+				font-size: 15px !important;    
+				height: auto !important;
+				min-height: 48px !important;   
+				box-sizing: border-box !important;
+				display: inline-block !important; 
+			}
+		}
+        .house-card {
+            background: var(--card-bg); padding: 18px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column;
+			box-sizing: border-box; /* Crucial: Ensures padding doesn't stretch dimensions out of bounds */
+			width: 100%; height: 145px; overflow: hidden;
+			cursor: pointer; transition: all 0.25s ease-in-out;
+        }
+		/* house-card states, is-expanded, and not. these five css class selectors
+		   affect the same section of code. expanding or shrinking the card to get
+		   details on the house and enable user to add notes or tasks. sets what is 
+		   collapsible, and what is visible. and finally preventing buttons from
+		   expanding cards. */
+		.house-card.is-expanded {
+			height: auto; overflow: visible; grid-column: 1 / -1; max-width: 800px;width: 100%; margin: 0 auto 20px auto; 
+		}
+
+		/* initial look .house-card {min-width: 350px;}*/
+		/*sets the collapsible body*/
+		.house-card .collapsible-body {display: none; margin-top: 15px;}
+		/*expands collapsible body*/
+		.house-card.is-expanded .collapsible-body {display: block;}
+		/* prevents button from toggling card */
+		.house-card :is(button, select, input) {cursor: default;}
+		/* HOUSE CORE EXPANSION: Automatically scales up when the card receives the is-expanded class */
+		.house-card.is-expanded .img-thumb {
+			width: 120px; height: 120px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+		}
+		.house-header, .trade-group {width: 100%; margin-bottom: 5px; padding: 10px;}
+        .house-header {border-bottom: 2px solid #f0f0f0; display: flex; flex-direction: column; gap: 12px;}
+		.house-header h3, .trade-group h3{
+			margin-top: 0;margin-bottom: 8px;
+		}
+		.house-header h3 {
+            font-size: 1.3rem; word-break: keep-all; overflow-wrap: break-word; white-space: normal; display: -webkit-box;
+			-webkit-line-clamp: 1;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+        }
+		.trade-group{
+			border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.2s; background: #fff; opacity: 1;
+		}
+		.trade-group h3{
+			color: #333; font-size: 16px; border-bottom: 2px solid #eaeaea; padding-bottom: 5px; display: flex; 
+			justify-content: space-between; align-items: center; width: 100%;
+		}
+		.group-cost-badge{
+			color: #2b2b2b; background: #f0f0f0; padding: 2px 8px; border-radius: 4px; font-weight: bold;
+		}
+		.group-progress-wrapper, .house-progress-wrapper{
+			height: 8px; border: 1px solid #ccc; background-color: #e0e0e0; overflow: hidden; border-radius: 2px; 
+		}
+		.group-progress-wrapper{width: 100%;}
+		.house-progress-wrapper {width: 100px;}
+		.house-progress-fill, .group-progress-fill {
+			height: 100%; background-color: #008000; transition: width 0.3s ease;
+		}
+		.task-sublist{list-style: none; padding: 0; margin: 0;}
+		.trade-group.is-paused { background: #f9f9f9;opacity: 0.65;}
+		
+		.trade-group.is-paused h3 span, .trade-group.is-paused span, .trade-group.is-paused .group-cost-badge,
+		.trade-group.is-paused	.group-progress-wrapper	{
+			text-decoration: line-through; color: #777; opacity: 0.5;
+		}
+		.group-header-controls{
+			display: flex; align-items: center; gap: 15px; margin-left: auto; margin-right: 15px;
+		}
+		.row-one{
+			width:100%; display: flex; justify-content: space-between; align-items: center; gap: 15px; box-sizing: border-box; height: auto;
+		}
+		.total-cost-row{
+			text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; white-space: nowrap;
+		}
+        .total-cost-row strong{font-size: 1.2rem;color: #2ec4b6;}
+        .house-title-row {
+            display: flex; align-items: center; gap: 4px; max-width: 45%; height: 100%;
+		}
+        .house-actions-row {
+            display: flex; align-items: center; gap: 8px;
+        }
+        .house-actions-row input {
+            flex: 1; min-width: 120px; padding: 6px; font-size: 14px;
+        }
+		.row-two{
+			width:100%; display: flex; justify-content: space-between; margin-top: 10px; align-items: center; gap: 15px;
+		}
+		.house-meta-row { 
+			color: #666; display: block; display: flex; justify-content: space-between; 
+			align-items: center; width: 100%; font-size: 13px;
+			}
+		
+		/*delete button style*/
+		.del-btn, .zip-btn, .frm-btn{white-space: nowrap;}
+        .del-btn {background-color: var(--accent-color); color: #000;}
+		.pill-del-btn {background-color: #e0e0e0;color: var(--accent-color);}
+        .zip-btn { background-color: var(--export-color); font-size: 11px;}
+		.frm-btn{background-color: var(--primary-color);}
+		.add-btn{background: #2ec4b6; color: #fff; }
+
+        .upload-label {
+			display: inline-block; padding: 4px 8px; background: #eee; border-radius: 4px; cursor: pointer;}
+		.upload-label input[type="file"] {display: none;}
+
+        .rooms-section {
+            background: var(--room-bg); padding: 10px; border-radius: 8px; margin-bottom: 15px;
+        }
+
+        .rooms-title {text-transform: uppercase; color: #666; margin-bottom: 8px;
+        }
+		ul, .super-group-list{list-style: none; padding: 0; margin: 0 0 15px 0;}
+		.super-group-list{max-height: 150px; overflow-y: auto; overflow-x: hidden;}
+		.house-notes-list{max-height: 150px; overflow-y: auto; overflow-x: hidden;}
+		.house-notes-list li, house-notes-list strong {font-size: 6px;}
+        li { display: flex; font-size: 14px;  align-items: center; padding: 10px 0; border-bottom: 1px solid #f9f9f9; gap: 12px; color:#999;}
+
+        li span {flex: 1; font-size: 16px; color: #000; word-break: break-word;}
+        .assigned-room { padding: 2px 6px; border-radius: 4px; color: #555;}
+
+        li.completed span {color: #888;}
+        /* Keeps form stuck inside card walls */
+		.task-input-group {
+			display: flex; flex-direction: column; gap: 8px; margin-top: 10px; background: #fdfdfd; 
+			padding: 10px; border-radius: 8px; border: 1px dashed #ccc; width: 100%;            
+		}
+		/* FORCE SELECT OPTIONS TO CLIP TEXT INSTEAD OF OVERLAPPING CARDS */
+		/* Locks select box to its parent row space and strictly prevents */
+		/* stretching past card boundaries. Adds clean '...' to long price descriptions*/
+		.task-input-group select{
+			width: 100%; max-width: 100%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;
+		}
+		/* 3. ENSURE FLEX CONTAINER WRAPS ON MOBILE */
+		.input-row-with-media, .budget-input-row, .input-address-line {
+			display: flex; gap: 6px; align-items: center; width: 100%;}
+		}
+		.input-row-with-media, .budget-input-row { flex-wrap: wrap; margin-bottom: 4px; margin-top: 4px;}
+		.budget-input-row span{color: #666;}
+		.budget-input-row input {background: var(--bg-color); width: 50px;flex-grow: 1;}
+		/* Clear numeric spinners up for a cleaner minimal look */
+		.budget-input-row input[type="text"] {background: #eee;cursor: not-allowed;}
+		.input-address-line {
+			background: #fdfdfd; border: 1px solid #eee; padding: 10px; border-radius: 8px; margin-bottom: 15px;
+		}
+		
+		/* EXTENDED WORKSPACE FLEX GRID */
+		.thumb-preview, img-thumb{object-fit: cover; border-radius: 6px; cursor: pointer;
+		}
+		.thumb-preview {border: 1px solid #ddd; background: #eee; box-shadow: 0 2px 4px rgba(0,0,0,0.05); box-shrink: 0;}
+		/* HOUSE CORE THUMBNAIL: Starts small with a smooth transition tracker */
+		.img-thumb {width: 45px; height: 45px; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);}
+        /* Lightbox Image Overlay Styles */
+        .image-modal {
+            display: none; position: fixed; z-index: 1000; padding: 50px 0 0 0; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; 
+			background-color: rgba(0,0,0,0.9);
+        }
+        .modal-content {
+            margin: auto; display: block; max-width: 90%; max-height: 80%; border-radius: 8px;
+        }
+        .modal-close {
+            position: absolute; top: 15px; right: 35px; color: #f1f1f1; font-size: 40px; cursor: pointer;
+        }
+		/* Task row layout wrap pass */
+		.task-img-wrapper {
+			display: inline-flex; align-items: center; margin-left: 8px; flex-shrink: 0;
+		}
+		.task-budget-badge{
+			background: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 4px; margin-left: 8px;
+		}
+		.master-admin-panel{
+			background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #eaeaea; box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-bottom: 25px;
+		}
+		.global-setting-row{
+			margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0;
+		}
+		.global-setting-row label{font-weight: bold; font-size: 14px; display: block; margin-bottom: 4px; color: #222;}
+		.global-setting-row p{margin: 0 0 10px 0; font-size: 12px; color: #666; font-style: italic;}
+		.add-house-action-group label{font-weight: bold; font-size: 14px; display: block; margin-bottom: 6px; color: #222;}
+		.list-of {font-size: 16px;}
+		.list-of li{font-size: 14px; color: #999;}
+		.serial-badge{
+			display:inline-block; font-size:11px; background:#e0f2f1; color:#004d40; padding:2px 8px; border-radius:4px; font-weight:bold; font-style:italic; 
+			margin-right:4px; list-style:none;
+		}
+		.task-note{list-style: none; padding: 0; margin: 4px 0 2px 24px; display: flex; flex-wrap: wrap; gap: 4px; width:100%;}
+		.room-manager-pill{
+			display: inline-flex; align-items: center; gap: 6px; background: #e0e0e0; color: #333; 
+			padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: bold; border: 1px solid #ccc;
+		}
+		.rOne {display: flex; justify-content: space-between; margin-bottom: 6px;}
+		.rTwo {display: flex; justify-content: space-between; margin-bottom: 6px; padding-top: 4px; border-top: 1px dashed #ddd;}
+		.rThree {margin-top: 6px; padding-top: 6px; border-top: 1px solid #ccc; font-weight: bold; display: flex; justify-content: space-between; align-items: center;}
+		.zip-export-action-row{margin: 15px 0; display: flex; justify-content: flex-end;}
+		.analyze-output {font-size: 13px; color: #444; background: #f4f6f8; padding: 10px; border-radius: 6px; margin-bottom: 15px; display: none;}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>House Renovation Progress Tracker</h1>
+    </header>
+
+    <!-- MASTER ADMIN PANEL PANEL: Groups global catalog syncing and house creation together -->
+    <div class="master-admin-panel">
+        <!-- TRACK A: DYNAMIC CATALOG SYNC INJECTION POINT (ABOVE ADD HOUSE) -->
+			<div class="global-setting-row">
+				<label>📊 Global Price Catalog Sync (3-Column CSV Import):</label>
+				<p>Upload a lean spreadsheet (name, cost, unit) to dynamically overwrite master template pricing models.</p>
+				<!-- Fires your clean asynchronous file content string stream reader pass natively -->
+				<input type="file" id="globalCatalogCsvInput" accept=".csv" onchange="handleMapCsvUpload(this)" >
+			</div>
+			<!-- TRACK B: YOUR EXISTING MASTER ADD-HOUSE REGISTRATION SUBMISSION FRAMEWORK -->
+			<div class="add-house-action-group">
+				<label>
+					🏠 Register New Project Card Profile:
+				</label>
+				<!-- Preserved your exact onsubmit preventDefault handling logic -->
+				<form class="input-section" onsubmit="event.preventDefault(); handleAdd();">
+					<input type="text" id="newHouseName" placeholder="New House name..." autocomplete="off">
+					<button class="f-bold add-btn" type="submit">Add</button>
+				</form>
+			</div>
+		</div>
+		<!-- The grid container wrapper -->
+		<div class="houses-grid" id="housesContainer"></div>
+	</div>
+
+	<div id="lightboxModal" class="image-modal" onclick="lightBox()">
+		<span class="f-bold modal-close">&times;</span>
+		<img id="lightboxTarget" class="modal-content" src="" alt="Enlarged view">
+	</div>
+<script>
+	// State Management
+	let houses = JSON.parse(localStorage.getItem('groupHousesMedia')) || [];
+
+	// Core of System: Commits data changes and refreshes your screen instantly
+	const saveHouses = () => {localStorage.setItem('groupHousesMedia', JSON.stringify(houses));renderHouses();	}
+	let eCardId = null; // Tracks which card should stay open across renders
+	
+	
+	let ROOM_REPAIR_MAP = JSON.parse(localStorage.getItem('dynamicRoomRepairCatalog'));
+	function updateRepairMapFromCsv(csvText) {
+		if (!csvText) return false;
+		const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== "");
+		if (lines.length < 2) return false; 
+		let updateCount = 0;
+		for (let i = 1; i < lines.length; i++) {
+			const columns = lines[i].split(',').map(col => col.replace(/["']/g, "").trim());
+			if (columns.length < 3) continue; 
+			const [csvName, csvCost, csvUnit] = columns;
+			const parsedCost = parseFloat(csvCost) || 0;
+			Object.keys(ROOM_REPAIR_MAP).forEach(categoryKey => {
+				const category = ROOM_REPAIR_MAP[categoryKey];
+				if (category && category.Options) {
+					const matchedOption = category.Options.find(opt => opt.name.trim().toLowerCase() === csvName.toLowerCase());
+					if (matchedOption) {
+						matchedOption.cost = parsedCost;
+						if (csvUnit) matchedOption.unit = csvUnit;
+						updateCount++;
+					}
+				}
+			});
+		}
+		if (updateCount > 0) {
+			localStorage.setItem('dynamicRoomRepairCatalog', JSON.stringify(ROOM_REPAIR_MAP));
+			console.log(`✅ Dictionary Cached: Mapped and preserved ${updateCount} base parameters.`);
+		}
+		return updateCount > 0;
+	}
+	function handleMapCsvUpload(fileInputEl) {
+		const file = fileInputEl.files[0];
+		if (!file) return;
+		const reader = new FileReader();
+		// ASYNCHRONOUS ENGINE GATE: Fires the instant the file content finishes streaming [STEM]
+		reader.onload = function(e) {
+			const csvTextDataStream = e.target.result;
+			// 1. RUN THE SYNCHRONIZATION CALCULATOR: Cross-references your 3-column data rows
+			const isMapUpdated = updateRepairMapFromCsv(csvTextDataStream);
+			if (isMapUpdated) {
+				alert("Master price catalog updated successfully!");
+				// 2. RE-RENDER INTEGRATION: Forces your entire app dashboard to instantly redraw.
+				// This forces every open card dropdown menu to display your new custom pricing bounds!
+				if (typeof renderHouses === 'function') {
+					renderHouses();
+				}
+			} else {
+				alert("Sync aborted: No matching line-item names found inside your dictionary file.");
+			}
+			fileInputEl.value = ''; // Clear file element marker cache
+		};
+
+		reader.readAsText(file); // Initiate the web browser's data string stream reader pass [STEM]
+	}
+    //function saveHouses() {localStorage.setItem('groupHousesMedia', JSON.stringify(houses));renderHouses();}
+	function escapeHtml(text) { const div = document.createElement('div'); div.innerText = text; return div.innerHTML; }
+	function commitAndRefreshDatabase() {
+		localStorage.setItem('groupHousesMedia', JSON.stringify(houses));
+		if (typeof saveHouses === 'function') saveHouses();
+		if (typeof renderHouses === 'function') renderHouses();
+	}
+	function formatCurrency(number) {
+		const value = parseFloat(number) || 0;
+		return value % 1 === 0 
+			? value.toLocaleString() 
+			: value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+	}
+	function getRoomString(roomName, roomNum) {
+		const r = roomName || 'General';
+		const pI = parseInt(roomNum, 10);
+		// Locks the number requirement strictly to your selected rooms
+		const needsNum = (r === "Bathroom" || r === "Bedroom");
+		if (needsNum && (isNaN(pI) || pI < 1)) return '';
+		return (!isNaN(pI) && pI >= 1 && needsNum) ? `${r}-${pI}` : r;
+	}
+	function scrapeFormFields(idListArray, houseId){
+		return idListArray.map(id => document.getElementById(`${id}-${houseId}`));
+	}
+	function generateSelectOptions(itemsArray, { valueKey = null, labelKey = null, dataAttributes = {} } = {}) {
+		if (!itemsArray || !Array.isArray(itemsArray)) return '';
+		return itemsArray.map(item => {
+			// 1. OPEN-ENDED DETECTION: Extract value and label text whether it's an object or a plain string [STEM]
+			const isObject = typeof item === 'object' && item !== null;
+			let [optionValue, optionLabel, customDataAttrs] = [isObject ? (valueKey ? item[valueKey] : item.name) : item, isObject ? (labelKey ? item[labelKey] : item.name) : item, '']
+			if (isObject && dataAttributes) {
+				Object.keys(dataAttributes).forEach(key => {
+					let dataValue = item[dataAttributes[key]];
+					if (dataValue !== undefined) {customDataAttrs += ` data-${key}="${escapeHtml(dataValue)}"`;}
+				});
+			}
+			return `<option value="${escapeHtml(optionValue)}"${customDataAttrs}>${escapeHtml(optionLabel)}</option>`;
+		}).join('');
+	}
+    //change to handleAdd
+    function handleAdd(houseId = null, {isRoom = false, onlyRoom = false, isNotes = false, skipRender=false} = {}, {aboutRoom = false, aboutHouse = false} = {}) {
+		//Creating new house card
+		if (!houseId) {
+			let name = document.getElementById('newHouseName')?.value.trim();
+			if (!name || houses.find(h => h.name === name)) return;
+			let address = null;
+			while (address == null || address.trim() === "" || houses.find(h => h.location === address)) {
+				address = prompt("Please input Address of House"); 
+				if(address === null ) return;
+			}
+			houses.push({ id: Date.now(), name, image: null, location: address, rooms: [], tasks: [], logTitle: null, notes: [], summary: null });
+			name = '';
+		}else if(isRoom){
+			const prefix = onlyRoom ? 'house' : 'task';
+			const [roomSelectEl, numSelectEl] = scrapeFormFields([`${prefix}RoomSelect`, `${prefix}NumSelect`], houseId);
+			const r = roomSelectEl?.value || '';
+			const nEl = (r === "Bathroom" || r === "Bedroom") ? numSelectEl : null;
+			const formattedRoom = getRoomString(r, nEl?.value);
+			if (!formattedRoom.trim()) {
+				console.warn(`🛑 BLOCKED INVALID INPUT: "${r}" requires a valid room number greater than 0.`);
+				alert(`Please provide a room number for your ${r}.`); // Optional user warning popup
+				return; // Exit early before updating database records
+			}
+			const house = houses.find(h => h.id === houseId);
+			const rExists = house.rooms.some(eR => eR.trim().toLowerCase() === formattedRoom.toLowerCase());
+			if (rExists || !formattedRoom.trim()) {
+				console.warn(`🛑 BLOCKED DUPLICATE OR INVALID ROOM: "${formattedRoom}" already exists.`);
+				return; 
+			}
+			house.rooms.push(formattedRoom.trim());
+			if(skipRender){return;}
+		}else if(isNotes){
+			//this is for adding notes to feature
+			//notesPointSelect-${house.id}
+			//houseNotes-${house.id}
+			let [myPoint, myNote] = scrapeFormFields(['notesPointSelect', 'houseNotes'], houseId).map(el => el ? el.value.trim() : '');
+			const house = houses.find(h => h.id === houseId);
+			if (aboutHouse){(house.notes ??= []).push({id: Date.now(), about:"General", note: myNote});}
+			else if(aboutRoom){(house.notes ??= []).push({id: Date.now(), about: myPoint, note: myNote});}
+			if (mN) mN.value = '';
+		}else{
+			handleAdd(houseId, {isRoom: true, skipRender: true});
+			const [title, lineItem, c, q, u, rmSel, nmSel] = scrapeFormFields(['taskTitleInput', 'lineItemInput', 'taskCostInput', 'taskQtyInput', 'taskUnitInput', 'taskRoomSelect', 'taskNumSelect'], 
+				houseId
+			);
+			const house = houses.find(h => h.id === houseId);
+			if (!title?.value.trim() || !lineItem || lineItem.value === "None"|| !house) return; //Room & Number Badge Processing
+			const [userInputCost, selectCate, lineItemName] = [parseFloat(c?.value) || 0, rmSel?.value || 'General', lineItem.value];
+			const categoryData = ROOM_REPAIR_MAP[selectCate];
+			const userOption = categoryData?.Options?.find(opt => opt.name === lineItemName);
+			if (userOption) {
+				const originalCost = parseFloat(userOption.cost) || 0;
+				if (userInputCost.toFixed(2) !== originalCost.toFixed(2)) {
+					
+					const promptText = `You changed the price of "${lineItemName}" from $${originalCost.toFixed(2)} to $${userInputCost.toFixed(2)}.\n\nDo you want to update this base cost in your master dictionary for all future tasks?`;
+					
+					if (confirm(promptText)) {
+						Object.keys(ROOM_REPAIR_MAP).forEach(categoryKey => {
+							const category = ROOM_REPAIR_MAP[categoryKey];
+							if (category && category.Options) {
+								category.Options.forEach(opt => {
+									if (opt.name === lineItemName) {
+										opt.cost = userInputCost;
+									}
+								});
+							}
+						});
+						console.log(`✅ Master dictionary globally updated for all instances of "${lineItemName}" to $${userInputCost}`);
+						house.tasks.forEach(t => {
+							if (t.lineItem === lineItemName && !t.completed) {
+								t.cost = userInputCost;
+							}
+						});
+					}
+				}
+			}
+			//Pushing Memory Storage for house tasks
+			(house.tasks ??= []).push({ 
+				id: Date.now(), title: title.value.trim(), lineItem: lineItem.value, 
+				room: rmSel?.value || 'General',
+				roomNum: (() => {
+					const pI = parseInt(nmSel?.value, 10);const r = rmSel?.value || 'General';
+					return (!isNaN(pI) && pI >= 1 && (r === "Bathroom" || r === "Bedroom")) ? pI : null;
+				})(),
+				subgroup: lineItem.options[lineItem.selectedIndex]?.getAttribute('data-group') || 'None',  
+				//Overwritten Budget Computations & Captures Adjustments in side of house task list
+				// each key matches 3 stored values of form section: cost, qty (quality), and unit
+				cost: userInputCost, qty: parseFloat(q?.value) || 1, unit: u?.value.trim() || 'ea.',
+				completed: false, image: null, notes: []
+			});
+			// UI Cleanup
+			//   Clear elements cleanly out of the form card
+			[title, lineItem, c, q, u].forEach(el => el ? el.value = (el.id.includes('lineItemInput') ? 'None' : '') : null);
+			
+		}
+		//let txt = `==========================================\n`;
+		//txt += `HOUSE RENOVATION LOG: ${house.name.toUpperCase()}\n`;
+		//txt += `Location/Address: ${house.location || 'Not Specified'}\n`;
+		//txt += `Export Date: ${now.toLocaleString()}\n`;
+		//txt += `==========================================\n\n`;
+		commitAndRefreshDatabase();
+		return; 
+	}
+    //Adds images to House-Card, and when expanded 
+	//  enables user to add images to thumbnail
+    async function handleProjectImage(houseId, inputElement, taskId = null) {
+		const [file, house, img] = [inputElement.files?.[0], houses.find(h => h.id === houseId), new Image()]
+		if (!file || !house) return;
+
+		// Create image loader bitmap context using asynchronous promises
+		img.src = await new Promise(resolve => {
+			const reader = new FileReader();
+			reader.onload = e => resolve(e.target.result);
+			reader.readAsDataURL(file);
+		});
+		await new Promise(resolve => img.onload = resolve);
+		// Compress and draw onto a lightweight background canvas
+		const [canvas, scale] = [document.createElement('canvas'), Math.min(1, 500 / img.width)];
+		[canvas.width, canvas.height] = [img.width * scale, img.height * scale]
+		canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+		
+		// Generate the optimized, compressed 75% quality Jpeg Base64 string snippet
+		const compressedBase64 = canvas.toDataURL('image/jpeg', 0.75);
+
+		//Determines if image targets a task row or house card profile
+		if (taskId !== null && house.tasks) {
+			// Find the exact targeted checklist row item inside memory
+			const task = house.tasks.find(t => t.id === taskId);
+			if (task) {
+				task.image = compressedBase64; // Assign photo right into the task object
+				scanSerialInline(houseId, taskId, compressedBase64);
+			}
+		} else {
+			//Assign directly to the expanded house card cover profile
+			house.image = compressedBase64;
+		}
+		saveHouses();
+	}
+	//Hello
+	window.handleToggle = (hId, sgN = null, tId = null) => {
+		if(sgN != null){
+			let h = houses.find(h => h.id === hId);
+			if (!h) return;
+			h.nanSubgroups ??= [];
+			const isCurrentlyPaused = h.nanSubgroups.includes(sgN);
+			let comNote = ``;
+			if (isCurrentlyPaused){
+				comNote = `${sgN}: Group has been Activated.`;
+			}else{
+				comNote = `${sgN}: Group has been Deactivated`;
+			}
+			let i = h.nanSubgroups.indexOf(sgN);
+			i > -1 ? h.nanSubgroups.splice(i, 1) : h.nanSubgroups.push(sgN);
+			
+			(h.notes ??= []).push({id: 0, about:"Reaction", note: comNote});
+		}else{
+			let h = houses.find(h => h.id === hId);
+			if (h) {
+				let task = h.tasks.find(t => t.id === tId);
+				comNote = ``;
+				if (task){
+					if (!task.completed) {comNote = `Task: ${task.title}, ${task.lineItem} of ${task.room} and ${task.subgroup} has been completed`;}
+					else{comNote = `Task: ${task.title}, ${task.lineItem} of ${task.room} and ${task.subgroup} has been marked incomplete`;}
+					task.completed = !task.completed;
+					(h.notes ??= []).push({id: 0, about:"Reaction", note: comNote});
+				}
+				
+			}
+		}
+		saveHouses();
+	}
+	//change to handleDelete function by 
+	//  combining deleteTask & deleteHouse & future deleteNotes function
+	//handleDelete(${house.id}, '${escapeHtml(rName)}', null);
+	function handleDelete(hId, {roomName = null, groupName = null, tId = null, nId = null} = {}) {
+		if (confirm("Are you sure you want to delete this item?")) {
+			const house = houses.find(h => h.id === hId);
+			if (!house) return;
+			let comNote = null;
+			if (groupName != null) {
+				house.tasks = house.tasks.filter(t => {
+					const currentTaskGroup = t.subgroup || 'None';
+					return currentTaskGroup.trim().toLowerCase() !== groupName.trim().toLowerCase();
+				});
+				comNote = `${groupName}: has been deleted.`;
+			} 
+			else if (roomName != null) {
+				house.rooms = house.rooms.filter(r => r !== roomName);
+				comNote = `${roomName}: has been deleted.`;
+				house.tasks = house.tasks.filter(t => {
+					return getRoomString(t.room, t.roomNum).toLowerCase() !== roomName.toLowerCase()
+				});
+			}
+			else if(nId != null){
+				if (nId === 0) {
+					console.warn("🔒 TRANSACTION DENIED: This system note ID is protected and cannot be deleted.");
+					return; // Exit early. The filter line is completely bypassed.
+				}
+				if (house.notes) {house.notes = house.notes.filter(n => n.id !== nId);}
+			}
+			else if (tId != null) {
+				const targetTask = house.tasks.find(t => t.id === tId);
+				if (targetTask) {
+					// Construct a beautifully descriptive permanent journal string using real task fields
+					let taskLocationString = getRoomString(targetTask.room, targetTask.roomNum);
+					comNote = `Task: ${targetTask.title || 'Untitled'}, ${targetTask.lineItem} of ${taskLocationString} has been deleted.`;					
+				}
+				house.tasks = house.tasks.filter(t => t.id !== tId);
+			} 
+			else {
+				const index = houses.indexOf(house);
+				if (index > -1) houses.splice(index, 1); 
+				commitAndRefreshDatabase();
+				return; 
+			}
+			if (comNote != null){(house.notes ??= []).push({id: 0, about:"Reaction", note: comNote});}
+			commitAndRefreshDatabase();
+		}
+	}
+	window.lightBox = (src = null) => {
+		const [m, t] = [document.getElementById('lightboxModal'), document.getElementById('lightboxTarget')];
+		if (m && t) {t.src = src || ''; m.style.display = src ? 'flex' : 'none';}
+	};
+	window.cardExpansion = (hID, e) => {
+		if (e.target.matches('button, select, input, label, button *, label *')) return;
+		const [tCard, isOpening] = [document.getElementById(`houseCard${hID}`), (eCardId !== hID)];
+		if (!tCard) return;
+		document.querySelector('.house-card.is-expanded')?.classList.remove('is-expanded');
+		eCardId = isOpening ? hID : null;
+		if (isOpening) {tCard.classList.add('is-expanded');tCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });runLiveDealAnalysis(hID);}
+	};
+	// NEW: Helper subroutine to swap selector items safely without page render loops
+	function renderNoteItem(house, houseId){
+		return (house.notes && house.notes.length > 0) ? house.notes.map(n => `
+			<li>
+				<span><b>${escapeHtml(n.about)}:</b> ${escapeHtml(n.note)}</span>
+				<button type="button" class="f-bold del-btn" onclick="handleDelete(${houseId}, {nId: ${n.id}})">✕</button>
+			</li>`).join('') : `<li class="no-notes-placeholder"><em>No logs or project notes recorded yet.</em></li>`;
+	}
+	async function scanSerialInline(houseId, taskId, base64Str) {
+		if (typeof Tesseract === 'undefined' || !base64Str) return;
+		try {
+			console.log("📸 Web Worker: Initiating background text recognition thread...");
+			
+			const worker = await Tesseract.createWorker('eng', 1, {
+				//workerPath: 'https://jsdelivr.net',
+				//corePath: 'https://jsdelivr.net',
+				logger: m => console.log("OCR Progress: ", m?.status, Math.round((m?.progress || 0) * 100) + "%")
+			});
+
+			const scanImg = new Image();
+			scanImg.src = base64Str;
+			await new Promise(res => scanImg.onload = res);
+
+			const scanCanvas = document.createElement('canvas');
+			[scanCanvas.width, scanCanvas.height] = [scanImg.width, scanImg.height];
+			scanCanvas.getContext('2d').drawImage(scanImg, 0, 0);
+
+			const ocrResult = await worker.recognize(scanCanvas);
+			const rawText = ocrResult?.data?.text || "";
+			await worker.terminate(); 
+
+			console.log("📝 Raw Text Scanned from Photo:\n", rawText); // ◄ Check your console to see exactly what Tesseract read!
+
+			// ==========================================
+			// 🎯 NEW: DYNAMIC UNIVERSAL SERIAL REGEX
+			// ==========================================
+			// This captures alphanumeric blocks anywhere between 4 and 25 characters long,
+			// allowing for hyphens, slashes, or dashes natively!
+			const regexPattern = /\b[A-Z0-9\-\/]{4,25}\b/gi;
+			const allWords = rawText.match(regexPattern) || [];
+			
+			// Filter out pure plain numbers (like quantities or prices) and common text words
+			const forbiddenWords = ['COST', 'TOTAL', 'PRICE', 'ROOM', 'EACH', 'UNIT', 'EACH', 'TASK', 'HOUSE', 'REPAIR', 'BUDGET', 'DATE'];
+			const validSerials = allWords.filter(word => {
+				const upperWord = word.toUpperCase();
+				// Ensure it has at least one number AND letter OR contains a hyphen/slash (classic serial codes!)
+				const hasMixedCharacters = (/[A-Z]/i.test(word) && /[0-9]/.test(word)) || word.includes('-') || word.includes('/');
+				return hasMixedCharacters && !forbiddenWords.includes(upperWord);
+			});
+
+			// Clean up duplicates and map them to uppercase blocks
+			const matches = [...new Set(validSerials)].map(s => s.toUpperCase().trim());
+			
+			if (matches.length > 0) {
+				const house = houses.find(h => h.id === houseId);
+				const task = house?.tasks?.find(t => t.id === taskId);
+				if (task) {
+					task.serialNumbers = matches;
+					localStorage.setItem('groupHousesMedia', JSON.stringify(houses));
+					
+					// TARGETED DOM INJECTION: Drops pills onto the row instantly without page stuttering
+					const listEl = document.getElementById(`serialNotesList-${taskId}`);
+					if (listEl) {
+						listEl.innerHTML = matches.map(sn => `
+							<li class="serial-badge">🏷️ SN: ${escapeHtml(sn)}</li>
+						`).join('');
+					}
+					console.log(`🎯 OCR Successful! Found and assigned serials: [${matches.join(', ')}]`);
+				}
+			} else {
+				console.log("ℹ️ Scan Finished: No matching alphanumeric serial tags filtered from the image text.");
+			}
+		} catch (err) { console.error("OCR Scan Interrupted:", err); }
+	}
+	function renderTaskItem(t, houseId, nanSet){
+		const imgHtml = t.image ? `<div class="task-img-wrapper"><img src="${t.image}" class="thumb-preview img-thumb" onclick="lightBox('${t.image}')" alt="Task"></div>` : '';
+		const isNan = nanSet.has(t.subgroup);
+		// MATH COMPILING: Multiplies custom day cost by the quantity amount of items [STEM]
+		const [customCost,quantityAmount] = [parseFloat(t.cost) || 0, parseFloat(t.qty) || 1];
+		const computedLineTotal = customCost * quantityAmount;
+		const badgeHtml = customCost > 0 ? `<span class="gv-12 f-bold task-budget-badge" style="${isNan ? 'text-decoration: line-through; opacity: 0.3;' : ''}">${quantityAmount} ${escapeHtml(t.unit || 'ea.')} × $${formatCurrency(customCost)} = <strong>$${formatCurrency(computedLineTotal)}</strong></span>` : '';
+		const serialPillsHtml = (t.serialNumbers && t.serialNumbers.length > 0)
+		? t.serialNumbers.map(sn => `<li class="serial-badge">🏷️ SN: ${escapeHtml(sn)}</li>`).join('')
+		: '';
+		let rowClass = "";
+		if(isNan) {rowClass = "is-paused";}
+		else if(t.completed){rowClass = "completed"}
+		return {
+				lineTotal: computedLineTotal,
+				isExcluded: isNan,
+				isDone: !!t.completed,
+				html: `
+					<li class="${rowClass}">
+						<input type="checkbox" ${t.completed ? 'checked' : ''} onchange="handleToggle(${houseId}, sgN=null, tId=${t.id})" ${isNan ? 'disabled' : ''}>
+						<span>
+							<strong>${escapeHtml(t.title)}</strong><span class="gv-14 line-item-text">-${escapeHtml(t.lineItem)}</span>
+						</span>
+						${badgeHtml}${imgHtml}
+						<label class="gv-12 f-bold upload-label" onclick="event.stopPropagation();" ${isNan ? 'style="opacity: 0.3; pointer-events: none;"' : ''}>📷 Photo <input type="file" accept="image/*" onchange="handleProjectImage(${houseId}, this, ${t.id})"></label>
+						<span class="f-bold assigned-room" style="background: ${isNan ? '#e2ece9' : '#e0e0e0'}">${escapeHtml(t.room)}${t.roomNum ? `-${t.roomNum}` : ''} (${escapeHtml(t.subgroup)})</span>
+						<button type="button" class="f-bold del-btn" onclick="handleDelete(${houseId}, {tId: ${t.id}})">✕</button>
+						<div class="task-notes-thread">
+							<ul .class="task-note" id="serialNotesList-${t.id}">
+								${serialPillsHtml}
+							</ul>
+						</div>
+					</li>`
+				};
+	}
+	const ALL_PROJECT_GROUPS = [...new Set(
+	Object.values(ROOM_REPAIR_MAP).flatMap(category => category.Groups))];
+	// FIXED: Added houseId parameter to enable your scraper lookups
+	function runLiveDealAnalysis(houseId, houseOverride = null) {
+		// If a background house object was passed explicitly by your zip loop, use it!
+		// Otherwise, run a global lookup to pull your live database card profile.
+		const house = houseOverride || houses.find(h => h.id === houseId);
+		if (!house) return '';
+
+		let purchasePrice = 0, rB = 0, arv = 0, tM = 0;
+		const outputEl = houseOverride ? null : document.getElementById(`analyzerOutput-${houseId}`);
+
+		// TRACK A: LIVE INTERACTIVE SCREEN RENDERING ENGINE
+		if (!houseOverride) {
+			const [purchasePriceEl, rBEl, arvEl, tMEl] = scrapeFormFields(['purchasePrice', 'renovationBudget', 'arv', 'timelineMonths'], houseId);
+
+			// Cache text box strings directly into database memory tracking slots
+			house.purchasePrice = purchasePriceEl?.value || '';
+			house.renovationBudget = rBEl?.value || '';
+			house.arv = arvEl?.value || '';
+			house.timelineMonths = tMEl?.value || '';
+
+			localStorage.setItem('groupHousesMedia', JSON.stringify(houses));
+
+			if (!house.purchasePrice && !house.renovationBudget && !house.arv) {
+				if (outputEl) outputEl.style.display = 'none';
+				return '';
+			}
+
+			// PARALLEL DESTRUCTURING ROW PASS
+			[purchasePrice, rB, arv, tM] = [parseFloat(house.purchasePrice) || 0, parseFloat(house.renovationBudget) || 0, parseFloat(house.arv) || 0, parseFloat(house.timelineMonths) || 0];
+		} 
+		// TRACK B: OFFLINE ZIP BACKGROUND CORE COMPILER
+		else {
+			// Read values directly out of your memory fields, completely bypassing the browser screen!
+			[purchasePrice, rB, arv, tM] = [parseFloat(house.purchasePrice) || 0, parseFloat(house.renovationBudget) || 0, parseFloat(house.arv) || 0, parseFloat(house.timelineMonths) || 0];
+			if (purchasePrice === 0 && renovationBudget === 0 && arv === 0) return '';
+		}
+
+		// 4. CORE MATHEMATICAL CALCULATION BLOCK
+		const [BUYING_COST_RATE, SELLING_COST_RATE, MONTHLY_HOLDING_ESTIMATE] = [0.025, 0.07, 400];
+		let [buyingCosts, sellingCosts, holdingCosts] = [purchasePrice * BUYING_COST_RATE, arv * SELLING_COST_RATE, tM * MONTHLY_HOLDING_ESTIMATE];
+		const totalProjectCost = purchasePrice + rB + buyingCosts + sellingCosts + holdingCosts;
+		const netProfit = arv - totalProjectCost;
+		const [netProfitMargin, roi] = [arv > 0 ? (netProfit / arv) * 100 : 0, totalProjectCost > 0 ? (netProfit / totalProjectCost) * 100 : 0];
+		const maximumAllowableOffer = (arv * .7) - rB; 
+		const isGoodDeal = purchasePrice > 0 && purchasePrice <= maximumAllowableOffer;
+
+		// 5. GENERATE UNIFIED SCOREBOARD VISUAL MARKUP
+		const generatedHtmlMarkup = `
+			<div class="rOne">
+				<span>💼 Hidden Expenses (Fees/Holds): <strong>$${Math.round(buyingCosts + sellingCosts + holdingCosts).toLocaleString()}</strong></span>
+				<span>🛠️ Total Outlay Cost: <strong>$${Math.round(totalProjectCost).toLocaleString()}</strong></span>
+			</div>
+			<div class="rTwo" >
+				<span>📈 Net Returns: <strong style="color: ${netProfit > 0 ? 'green' : 'red'};">$${Math.round(netProfit).toLocaleString()} (${netProfitMargin.toFixed(2)}%)</strong></span>
+				<span>🎯 Yield ROI: <strong>${roi.toFixed(2)}%</strong></span>
+			</div>
+			<div class="rThree">
+				<span>🎯 Max Allowable Offer (MAO): $${Math.round(maximumAllowableOffer).toLocaleString()}</span>
+				<span style="color: #fff; background: ${isGoodDeal ? '#2ec4b6' : '#e63946'};">
+					${isGoodDeal ? '✅ VIABLE INVESTMENT' : '❌ OVERPRICED DEAL'}
+				</span>
+			</div>
+		`;
+
+		// If it's a live screen edit, immediately manipulate the DOM output frame container
+		if (!houseOverride && outputEl) {
+			outputEl.style.display = 'block';
+			outputEl.innerHTML = generatedHtmlMarkup;
+		}
+
+		// ALWAYS RETURN THE MARKUP SNIPPET: Enables your zip builder to consume it natively!
+		return generatedHtmlMarkup;
+	}
+	function renderGroupSections(house, nanSet) {
+		let [runningTotal, completedTotal] = [0, 0];
+		// OUTER LIST: Loops through the 19 unique trade groups
+		const htmlArray = ALL_PROJECT_GROUPS.map((groupName) => {
+			// FILTER LOCK: Isolate only the tasks assigned to this specific trade category
+			let groupCostSum = 0;
+			let completedGroupSum = 0;
+			const tasksPerGroup = house.tasks.filter(t => {
+				const currentTaskGroup = t.subgroup || 'None';
+				return currentTaskGroup.trim().toLowerCase() === groupName.trim().toLowerCase();
+			});
+
+			// Skip rendering a trade group card entirely if it has no active tasks to keep the UI clean
+			if (tasksPerGroup.length === 0) return '';
+
+			// INNER LIST: Loops through the group's tasks to create checklist item rows
+			const groupTasksHtml = tasksPerGroup.map(t => {
+				const tResult = renderTaskItem(t, house.id, nanSet);
+				
+				// Accumulate financial math compilation numbers
+				if (!tResult.isExcluded) {
+					groupCostSum += tResult.lineTotal;
+					if (tResult.isDone) {
+						completedGroupSum += tResult.lineTotal;
+					}
+				}
+				return tResult.html;
+			}).join('');
+			runningTotal += groupCostSum;
+			completedTotal += completedGroupSum;
+			const gPercent = groupCostSum > 0 ? (completedGroupSum / groupCostSum) * 100 : 0;
+			const formattedGroupTotal = formatCurrency(groupCostSum);
+			const isGroupDeactivated = nanSet.has(groupName);
+// 2. Your template return block follows right after:
+			return `
+				<div class="trade-group ${isGroupDeactivated ? 'is-paused' : ''}">
+					<h3>
+						<span>🛠️ ${escapeHtml(groupName)}</span>
+						<div class="group-header-controls">
+							<!-- INTEGRATED TOGGLE: Localized checkbox to activate or pause the entire trade category -->
+							<label>
+								<input type="checkbox" ${isGroupDeactivated ? 'checked' : ''} onchange="handleToggle(${house.id}, sgN='${escapeHtml(groupName)}')">
+								<b>${isGroupDeactivated ? '⏸️ Deactive' : '▶️ Active'}</b>
+							</label>
+
+							<span class="group-cost-badge">$${formattedGroupTotal}</span>
+						</div>
+
+						<button type="button" class="f-bold del-btn" onclick="handleDelete(${house.id}, {groupName:'${escapeHtml(groupName)}'}, null)">✕</button>
+					</h3>
+					
+					<div class="group-progress-wrapper"><div class="group-progress-fill" style="width: ${gPercent}%;"></div>
+					</div>
+					<ul class="task-sublist">${groupTasksHtml}</ul>
+				</div>
+			`;
+		}).join('');
+
+		return { html: htmlArray, runningTotal, completedTotal };
+	}
+	function buildHouseCardHtml(house, roomOptions, dynamicTaskOptions, tasksHtml, houseRunningTotal, percent){
+		
+		const thumbHtml = house.image ? `<img src="${house.image}" class="thumb-preview img-thumb" onclick="event.stopPropagation(); lightBox('${house.image}')" alt="Cover">` : '';
+		const notesHtml = null;
+		const [taskRoom,roomSelected]  = [house.formTaskRoom || Object.keys(ROOM_REPAIR_MAP)[0], house.formRoom || Object.keys(ROOM_REPAIR_MAP)[0]]
+		const roomPillsHtml = house.rooms.map(rName => `
+			<span class="room-manager-pill">
+				🏠 ${escapeHtml(rName)}
+				<!-- THE TARGET LINK: Calls your global delete function specifically for this room name -->
+				<button type="button" class="pill-del-btn" onclick="event.stopPropagation(); handleDelete(${house.id}, {roomName: '${escapeHtml(rName)}'}); renderHouses();">
+					✕
+				</button>
+			</span>
+		`).join('');
+		const pointNotesList = generateSelectOptions(house.rooms);
+		const [totalRepairsCost, targetBudgetBasis] = [parseFloat(houseRunningTotal) || 0, parseFloat(house.renovationBudget) || 0];
+		const budgetDifference = targetBudgetBasis - totalRepairsCost;
+
+		let budgetFeedbackHtml = '';
+		if (targetBudgetBasis === 0) {
+			budgetFeedbackHtml = `<b style="color: #666;">💰 Budget: Not Set</b>`;
+		} else if (budgetDifference < 0) {
+			// ❌ OVER BUDGET ALERT: Red flag turns on if contractor costs exceed limits
+			budgetFeedbackHtml = `<b style="color: #e63946;">⚠️ OVER BUDGET $${Math.abs(budgetDifference).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}!</b>`;
+		} else {
+			// ✅ WITHIN BUDGET TRACKER: Green marker reports remaining financial cushion
+			budgetFeedbackHtml = `<b style="color: #2ec4b6;">✅ Within Budget ($${budgetDifference.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})})</b>`;
+		}
+		return `
+			<div class="house-card ${eCardId === house.id ? 'is-expanded' : ''}" id="houseCard${house.id}" onclick="cardExpansion(${house.id}, event)">
+				<div class="house-header">
+					<div class="row-one">
+						<div class="house-title-row">${thumbHtml}
+							<div class=""><h3>${escapeHtml(house.name)}</h3></div>
+						</div>
+						<div class="house-actions-row" onclick="event.stopPropagation();">
+							<label class="upload-label">🖼️<input type="file" accept="image/*" onchange="handleProjectImage(${house.id}, this)"></label>
+							<button type="button" class="f-bold del-btn" onclick="handleDelete(${house.id})">Delete</button>
+						</div>
+					</div>
+					<div class="row-two">
+						<div class="house-meta-row">
+							<div>🛠️ Repairs: <strong>$${totalRepairsCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> / $${targetBudgetBasis.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} Budget</div>
+							<div>${budgetFeedbackHtml}</div>
+						</div>
+						<div>Progress: <div class="house-progress-wrapper"><div class="house-progress-fill" id="progressBar-${house.id}" style="width: ${percent}%; "></div></div></div>
+					</div>				
+				</div>
+
+				<div class="collapsible-body" onclick="event.stopPropagation();">
+					<div class="zip-export-action-row">
+						<!-- Stops event bubbling up to the parent card toggle and triggers your scraper engine -->
+						<button type="button" class="f-bold zip-btn" onclick="event.stopPropagation(); exportHouseToZipArchive(${house.id})">
+							📦 Export Project Dossier (.ZIP)
+						</button>
+					</div>
+					<div class="input-address-line">
+						<!-- FIXED: Added missing closing parenthesis on your houses.find() line -->
+						<input type="text" id="projectLocationInput-${house.id}" placeholder="Enter address..." value="${escapeHtml(house.location || '')}" onchange="const h = houses.find(x => x.id === ${house.id}); if(h) h.location = this.value.trim();">
+					</div>
+					<div class="deal-analyzer-inputs mobile-responsive-analyzer-grid">
+						<span>Purchase Price: <input type="number" id="purchasePrice-${house.id}" step="0.01" min="0" placeholder="($)" value="${house.purchasePrice || ''}" oninput="runLiveDealAnalysis(${house.id})"></span>
+						<span>Renovation Budget: <input type="number" id="renovationBudget-${house.id}" step="0.01" min="0" placeholder="($)" value="${house.renovationBudget || ''}" oninput="runLiveDealAnalysis(${house.id})"></span>
+						<span>After Repair Value: <input type="number" id="arv-${house.id}" step="0.01" min="0" placeholder="($)" value="${house.arv || ''}" oninput="runLiveDealAnalysis(${house.id})"></span>
+						<span>Timeline Months: <input type="number" id="timelineMonths-${house.id}" step="any" min="0.01" placeholder="1" value="${house.timelineMonths || 1}" oninput="runLiveDealAnalysis(${house.id})"></span>
+					</div>
+					<div class="analyze-output" id="analyzerOutput-${house.id}">
+						<!-- JavaScript overwrites this row dynamically on every keystroke -->
+					</div>
+					<!-- FIXED: Removed duplicate closing parentheses from the onsubmit attribute tag wrapper -->
+					<form class="house-input-group" onsubmit="event.preventDefault(); handleAdd(${house.id}, {isRoom: true, onlyRoom: true}); renderHouses();">
+						<select id="houseRoomSelect-${house.id}" 
+								onchange="
+									let rSel = document.getElementById('roomNumSelect-${house.id}'); 
+									let isNum = (this.value === 'Bathroom' || this.value === 'Bedroom');
+									if (rSel) {
+										rSel.style.display = isNum ? 'inline-block' : 'none'; 
+										if (!isNum) rSel.value = ''; 
+									} 
+									const h = houses.find(x => x.id === ${house.id});
+									if(h){ h.formRoom = this.value; renderHouses(); }">
+							${roomOptions}
+						</select>
+						<input type="number" id="roomNumSelect-${house.id}" min="1" placeholder="#" 
+							   oninput="const h = houses.find(x => x.id === ${house.id}); if(h) { h.formRoomNum = this.value; }" 
+							   style="max-width: 70px; display: ${roomSelected === 'Bathroom' || roomSelected === 'Bedroom' ? 'inline-block' : 'none'};">						
+						<button class="f-bold frm-btn" type="submit">+ Add Room</button>
+					</form>
+					<div class="rooms-dashboard-section" style="margin-top: 15px; margin-bottom: 15px;">
+						<span class="gv-12 f-bold" style="display: block; margin-bottom: 8px; color: #555;">📁 Registered Rooms List:</span>
+						<div class="rooms-pills-container" style="display: flex; flex-wrap: wrap; gap: 8px; width: 100%;">
+							${roomPillsHtml || '<em>No custom rooms created yet.</em>'}
+						</div>
+					</div>
+					<span class="list-of">
+						<strong>List of Notes</strong>
+						<ul class="house-notes-list" style="list-style: none; padding: 0; margin: 10px 0 0 0;">
+							<!-- DYNAMIC REUSE: Invokes your new function to draw the list flawlessly -->
+							${renderNoteItem(house, house.id)}
+						</ul>
+					</span>
+					
+					<form class="note-input-group" onsubmit="event.preventDefault(); 
+						const isAboutHouse = ((document.getElementById('notesPointSelect-${house.id}')?.value || 'House') === 'House');
+						// FIXED: Updated parameter names to perfectly match your handleAdd function's destructured options object!
+						handleAdd(${house.id}, {isNotes: true}, {aboutHouse: isAboutHouse, aboutRoom: !isAboutHouse});">
+						<div class="notes-input-row">
+							<select id="notesPointSelect-${house.id}">
+								<option value="House">House</option>
+								${pointNotesList}
+							</select>
+							<input type="text" id="houseNotes-${house.id}" placeholder="Add Notes...">
+							<button class="f-bold frm-btn" type="submit">+ Notes</button>
+						</div>
+					</form>
+					<br>
+					<span class="list-of">
+						<strong>List of Repairs</strong>
+						<div class="total-cost-row">Total Cost of Repairs: <strong>$${houseRunningTotal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></div>
+					</span>
+					<ul class="super-group-list">${tasksHtml || '<li>No checklist items added yet.</li>'}</ul>
+					<!-- Room-Input-Form, to add rooms to existing house -->
+					<form class="task-input-group" onsubmit="event.preventDefault(); handleAdd(${house.id});">
+						<div class="input-row-with-media">
+							<select id="taskRoomSelect-${house.id}" 
+									onchange="
+									let rSel = document.getElementById('taskNumSelect-${house.id}'); 
+									let isNum = (this.value === 'Bathroom' || this.value === 'Bedroom');
+									if (rSel) {
+										rSel.style.display = isNum ? 'inline-block' : 'none'; 
+										if (!isNum) rSel.value = ''; 
+									}
+									const h = houses.find(x => x.id === ${house.id});
+									if(h){h.formTaskRoom = this.value; renderHouses();}">${roomOptions}</select>
+							<input type="number" id="taskNumSelect-${house.id}" min="1" placeholder="#" oninput="
+								const primaryNumSelect = document.getElementById('numSelect-${house.id}'); 
+								if (primaryNumSelect) primaryNumSelect.value = this.value;" 
+								style="max-width: 70px; display: ${taskRoom === 'Bathroom' || taskRoom === 'Bedroom' ? 'inline-block' : 'none'};">
+							<input type="text" id="taskTitleInput-${house.id}" placeholder="Task Title">
+							<!-- INLINE AUTO-FILL CORRECTION: Populates base price into Cost field, defaults Quantity Amount field to 1 -->
+							<select id="lineItemInput-${house.id}" onchange="const opt = this.options[this.selectedIndex]; const isNone = opt.value === 'None'; document.getElementById('taskCostInput-${house.id}').value = isNone ? '' : opt.getAttribute('data-cost'); document.getElementById('taskQtyInput-${house.id}').value = isNone ? '' : '1'; document.getElementById('taskUnitInput-${house.id}').value = isNone ? '' : opt.getAttribute('data-unit');" style="min-width: 200px;">${dynamicTaskOptions}</select>
+						</div>
+						<div class="budget-input-row">
+							<!-- PROPER RE-ALIGNMENT: Clear input markers mapping costs and quantities distinctly -->
+							<span class="f-bold">Price Basis:</span>
+							<input type="number" id="taskCostInput-${house.id}" step="0.01" min="0" placeholder="Cost ($)">
+							<span class="f-bold">Amount Needed:</span>
+							<input type="number" id="taskQtyInput-${house.id}" step="any" min="0.01" placeholder="Qty">
+							<input type="text" id="taskUnitInput-${house.id}" readonly placeholder="Unit">
+							
+							<button class="f-bold frm-btn" type="submit">+ Task</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		`;
+	}
+	function renderHouses() {
+		console.group("🛠️ CURRENT HOUSES STORAGE ARRAY STATE");
+		houses.forEach(house => {
+			console.log(`House: "${house.name}" (ID: ${house.id})`);
+			console.log(`└─ Registered Rooms (${house.rooms?.length || 0}):`, house.rooms);
+			console.log(`└─ Total Tasks Saved (${house.tasks?.length || 0}):`, house.tasks);
+		});
+		console.groupEnd();
+		const container = document.getElementById('housesContainer');
+		if (!container) return;
+
+		// Generates the base room selections using your array mapping format
+		const roomOptions = generateSelectOptions(Object.keys(ROOM_REPAIR_MAP));
+
+		container.innerHTML = houses.map(house => {
+			house.nanSubgroups ??= []; 
+			house.tasks ??= [];
+
+			const [taskRoom, roomSelected, nanSet, availableOptions, availableSubgroups] = [
+				house.formTaskRoom || Object.keys(ROOM_REPAIR_MAP)[0], 
+				house.formRoom || Object.keys(ROOM_REPAIR_MAP)[0],
+				new Set(house.nanSubgroups),
+				(ROOM_REPAIR_MAP[house.formTaskRoom || Object.keys(ROOM_REPAIR_MAP)[0]] || {}).Options || [], 
+				(ROOM_REPAIR_MAP[house.formTaskRoom || Object.keys(ROOM_REPAIR_MAP)[0]] || {}).Groups || []
+			];
+			
+			const dynamicTaskOptions = `
+				<option value="None">-- Select a Task --</option>
+					${generateSelectOptions(availableOptions, {valueKey: 'name',labelKey: 'name',dataAttributes: { cost: 'cost', unit: 'unit', group: 'group'}} )}
+			`;
+			
+			// 1. EXECUTE SUB-FUNCTIONS: Build list of lists data and compute sums
+			const roomData = renderGroupSections(house, nanSet);
+			const percent = roomData.runningTotal > 0 ? (roomData.completedTotal / roomData.runningTotal) * 100 : 0;
+			
+			// 2. RETURN THE TEMPLATE STRING: Map expects the return to happen inside the loop block
+			return buildHouseCardHtml(
+				house, roomOptions, dynamicTaskOptions, 
+				roomData.html, roomData.runningTotal, percent
+			);
+		}).join(''); // <-- Closes the houses.map() loop cleanly
+
+		// 3. PERSIST ACTIVE UI STATE SELECTORS AFTER DOM INJECTION
+		houses.forEach(house => {
+			const tRoom = document.getElementById(`taskRoomSelect-${house.id}`);
+			if (tRoom) tRoom.value = house.formTaskRoom || Object.keys(ROOM_REPAIR_MAP)[0];
+			const hRoom = document.getElementById(`houseRoomSelect-${house.id}`);
+			if (hRoom) hRoom.value = house.formRoom || Object.keys(ROOM_REPAIR_MAP)[0];
+		});
+	}
+	function parseBase64Image(dataUrl){
+		const parts = dataUrl.split(',');
+		const mime = parts[0].match(/:(.*?);/)?.[1] || 'image/jpeg';
+		return { ext: mime.split('/')[1] || 'jpg', data: parts[1] };
+	}
+	//used to scrape webpage and feed into zip folder files
+	function exportHouseToZipArchive(houseId) {
+		if (typeof JSZip === 'undefined') {
+			alert("🛑 The JSZip compression library is not loaded. Please verify your script headers.");
+			return;
+		}
+		const house = houses.find(h => h.id === houseId);
+		if (!house) return;
+		const zip = new JSZip();
+		//extracts images for storing in file and displaying in zipped html. 
+		const imgFolder = zip.folder("images");
+		if (house.image && typeof house.image === 'string' && house.image.startsWith('data:image')) {
+			try {
+				// Extract the raw file parameters safely from your base64 string tracker
+				const { ext, base64 } = parseBase64Image(house.image);
+				const mainFilename = `cover_main_image.${ext}`;
+				
+				// Save the physical file directly into your backup images folder
+				imgFolder.file(mainFilename, base64, { base64: true });
+			} catch (err) {
+				console.error("🛑 Backup Warning: Profile cover art file export failed:", err);
+			}
+		}
+		house.tasks.forEach(t => {
+			if (t.image && typeof t.image === 'string' && t.image.startsWith('data:image')) {
+				try {
+					const { ext, base64 } = parseBase64Image(t.image);
+					// Sanitize the checklist task title to create a safe, clean file name
+					const cleanTaskTitle = t.title.replace(/[^a-zA-Z0-9_\-]/g, '_').replace(/__+/g, '_').toLowerCase();
+					const taskFilename = `${cleanTaskTitle}_${t.id}.${ext}`;
+					
+					// Save every raw checklist item photo into your backup directory safely
+					imgFolder.file(taskFilename, base64, { base64: true });
+				} catch (err) {
+					console.error(`🛑 Backup Warning: Task photo file export failed on ID ${t.id}:`, err);
+				}
+			}
+		});
+		//generates excel sheet
+		let excelSpreadsheetPayload = "Task ID,Title,Repair Type,Room/Location,Trade Subgroup,Price Basis,Quantity,Unit,Line Total Cost,Completed Status,Serial Numbers\r\n";
+		let excelGrandTotal = 0;
+		if (house.tasks && house.tasks.length > 0) {
+			house.tasks.forEach(t => {
+				const safeCost = parseFloat(t.cost) || 0;
+				const safeQty = parseFloat(t.qty) || 1;
+				const lineTotal = safeCost * safeQty;
+				excelGrandTotal += lineTotal;
+				// Extract room and structural badges cleanly
+				const roomName = t.room || 'General';
+				const roomNumStr = t.roomNum ? ` #${t.roomNum}` : '';
+				const completeLocation = `${roomName}${roomNumStr}`;
+				// Extract serial numbers array into a clean comma-spaced block
+				const serialsStr = (t.serialNumbers && t.serialNumbers.length > 0) ? t.serialNumbers.join(" | ") : "None";
+				// Escape quotes inside fields to ensure Excel reads text boundaries flawlessly
+				const escapedTitle = `"${(t.title || 'Untitled').replace(/"/g, '""')}"`;
+				const escapedLineItem = `"${(t.lineItem || 'None').replace(/"/g, '""')}"`;
+				const escapedSubgroup = `"${(t.subgroup || 'None').replace(/"/g, '""')}"`;
+				const escapedUnit = `"${(t.unit || 'ea.').replace(/"/g, '""')}"`;
+				excelSpreadsheetPayload += `${t.id},${escapedTitle},${escapedLineItem},"${completeLocation}",${escapedSubgroup},${safeCost.toFixed(2)},${safeQty},${escapedUnit},${lineTotal.toFixed(2)},${t.completed ? 'YES' : 'PENDING'},"${serialsStr}"\r\n`;
+			});
+			excelSpreadsheetPayload += `\r\n,,,,,,,GRAND TOTAL:,${excelGrandTotal.toFixed(2)},\r\n`;
+		} else {
+			excelSpreadsheetPayload += ",,,No checklist items logged,,,,\r\n";
+		}
+		// Dynamically pull master stylesheet block 
+		const liveDashboardStyles = document.querySelector('style')?.innerHTML || '';
+		// Generates the html page
+		const liveExpandedCardInnerHtml = document.getElementById(`houseCard${houseId}`)?.innerHTML || '';
+		const htmlDocumentPayload = `
+			<!DOCTYPE html>
+			<html lang="en">
+			<head>
+				<meta charset="UTF-8">
+				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+				<title>Project Report - ${escapeHtml(house.name)}</title>
+				<style>
+					${liveDashboardStyles}					
+					body { 
+						font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+						max-width: 850px; 
+						margin: 0 auto; 
+						padding: 30px; 
+						background: #ffffff; 
+						color: #333333; 
+					}
+					.collapsible-body { display: block !important; max-height: none !important; opacity: 1 !important; visibility: visible !important; }
+					button, input, select, form, label,	.del-btn, .pill-del-btn, .upload-label, .house-actions-row, .house-input-group, .note-input-group, 
+					.task-input-group, .deal-analyzer-inputs { 
+						display: none !important; 
+					}
+					
+					@media print { body { padding: 0; } }
+				</style>
+			</head>
+			<body>
+				<!-- DYNAMIC REUSE INJECTION FRAME -->
+				<!-- Drops your exact existing application layout structures natively into the report body shell -->
+				<div class="house-card is-expanded">
+					${liveExpandedCardInnerHtml}
+				</div>
+			</body>
+			</html>
+				`;
+
+		// Generate Zip Folder
+		zip.file("index.html", htmlDocumentPayload);
+		zip.file("itemized_repairs_ledger.csv", excelSpreadsheetPayload);
+
+		zip.generateAsync({ type: "blob" }).then(function (contentBlob) {
+			const virtualUrl = URL.createObjectURL(contentBlob);
+			
+			const downloadLink = document.createElement('a');
+			downloadLink.href = virtualUrl;
+			downloadLink.download = `${house.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_master_archive.zip`;
+			
+			document.body.appendChild(downloadLink);
+			downloadLink.click();
+			
+			document.body.removeChild(downloadLink);
+			URL.revokeObjectURL(virtualUrl);
+		});
+	}
+	// Initial Bootstrapping Trigger Loop
+	renderHouses();window.handleProjectImage = handleProjectImage;window.handleAdd = handleAdd;
+	window.handleDelete = handleDelete; window.exportHouseToZipArchive = exportHouseToZipArchive;
+</script>
+<!-- Enables user to install on homepage -->
+	<script>
+		// Link your web app manifest file inside the header document lifecycle
+		const manifestLink = document.createElement('link');
+		manifestLink.rel = 'manifest';
+		manifestLink.href = './manifest.json';
+		document.head.appendChild(manifestLink);
+
+		// Register your background Service Worker thread safely [STEM]
+		if ('serviceWorker' in navigator) {
+			window.addEventListener('load', () => {
+				navigator.serviceWorker.register('./sw.js')
+					.then(reg => console.log('🚀 PWA Service Worker successfully registered footprint:', reg.scope))
+					.catch(err => console.warn('🛑 PWA Registration Interrupted:', err));
+			});
+		}
+</script>
+
+</body>
+</html>
