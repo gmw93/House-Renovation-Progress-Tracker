@@ -63,6 +63,7 @@ A lightweight, high-performance vanilla JavaScript web application tailored for 
 *   **Storage Framework**: Browser `localStorage` serialization strings (`groupHousesMedia`).
 *   **External Packages**: Distributed JSZip compression streaming and Tesseract.js computer vision worker arrays.
 ## How To Run Locally
+### run on: https://gmw93.github.io/House-Renovation-Progress-Tracker/
 ### Android Chrome
    1. tap the 3 dots at top of screen
    2. scroll down action list drawer and look for "Add to Home Screen" or "Install App"
