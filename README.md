@@ -73,3 +73,7 @@ A lightweight, high-performance vanilla JavaScript web application tailored for 
 ### Desktop
    1. Clone Repository directly down onto your local workspace environment
    2. Double-click root 'index.html' file inside your explorer panel to fire up system in any standard modern web browswer
+### All Above Require
+   All above require input of csv file, to set data for future usage
+   Category, Task Name, Unit Cost, Unit Measure, Trade Subgroup 
+   Kitchen, Install Kitchen Object, $0.0, ea., Cabintry 
