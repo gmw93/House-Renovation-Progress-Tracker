@@ -1256,19 +1256,27 @@ function handleMapCsvUpload(fileInputEl) {
 					<ul class="super-group-list">${tasksHtml || '<li>No checklist items added yet.</li>'}</ul>
 					<!-- Room-Input-Form, to add rooms to existing house -->
 					<form class="task-input-group" onsubmit="event.preventDefault(); handleAdd(${house.id});">
-						<!-- 🖥️ DESKTOP COMPACT ROW: All elements sit side-by-side naturally on wide viewports -->
 						<div class="input-row-with-media">
-							<select id="taskRoomSelect-${house.id}" onchange="...">${roomOptions}</select>
-							
-							<input type="number" id="taskNumSelect-${house.id}" min="1" placeholder="#" oninput="..." 
-								style="max-width: 70px; display: ${house.formTaskRoom === 'Bathroom' || house.formTaskRoom === 'Bedroom' ? 'inline-block' : 'none'};">
-							
+							<select id="taskRoomSelect-${house.id}" 
+									onchange="
+									let rSel = document.getElementById('taskNumSelect-${house.id}'); 
+									let isNum = (this.value === 'Bathroom' || this.value === 'Bedroom');
+									if (rSel) {
+										rSel.style.display = isNum ? 'inline-block' : 'none'; 
+										if (!isNum) rSel.value = ''; 
+									}
+									const h = houses.find(x => x.id === ${house.id});
+									if(h){h.formTaskRoom = this.value; renderHouses();}">${roomOptions}</select>
+							<input type="number" id="taskNumSelect-${house.id}" min="1" placeholder="#" oninput="
+								const primaryNumSelect = document.getElementById('numSelect-${house.id}'); 
+								if (primaryNumSelect) primaryNumSelect.value = this.value;" 
+								style="max-width: 70px; display: ${taskRoom === 'Bathroom' || taskRoom === 'Bedroom' ? 'inline-block' : 'none'};">
 							<input type="text" id="taskTitleInput-${house.id}" placeholder="Task Title">
-							
-							<select id="lineItemInput-${house.id}" onchange="..." style="min-width: 200px;">${dynamicTaskOptions}</select>
+							<!-- INLINE AUTO-FILL CORRECTION: Populates base price into Cost field, defaults Quantity Amount field to 1 -->
+							<select id="lineItemInput-${house.id}" onchange="const opt = this.options[this.selectedIndex]; const isNone = opt.value === 'None'; document.getElementById('taskCostInput-${house.id}').value = isNone ? '' : opt.getAttribute('data-cost'); document.getElementById('taskQtyInput-${house.id}').value = isNone ? '' : '1'; document.getElementById('taskUnitInput-${house.id}').value = isNone ? '' : opt.getAttribute('data-unit');" style="min-width: 200px;">${dynamicTaskOptions}</select>
 						</div>
-					
 						<div class="budget-input-row">
+							<!-- PROPER RE-ALIGNMENT: Clear input markers mapping costs and quantities distinctly -->
 							<span class="f-bold">Price Basis:</span>
 							<input type="number" id="taskCostInput-${house.id}" step="0.01" min="0" placeholder="Cost ($)">
 							<span class="f-bold">Amount Needed:</span>
