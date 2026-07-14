@@ -440,11 +440,12 @@ function updateRepairMapFromCsv(csvText) {
 		let prefixCode = "";
 		
 		if (csvId && csvId.includes('-')) {
-			prefixCode = csvId.split('-').toLowerCase().trim();
+			// 🎯 FIXED SYNTAX POINTER: Added [0] to lower-case only the extracted string prefix token!
+			prefixCode = csvId.split('-')[0].toLowerCase().trim();
 			targetCategoryKey = categoryPrefixMap[prefixCode] || null;
 		}
 
-		// 🎯 HIERARCHICAL 19-SUBGROUP MATRIX RESOLVER [STEM]
+		// 🎯 HIERARCHICAL 19-SUBGROUP MATRIX RESOLVER
 		let assignedSubgroup = "General"; 
 		const lowerName = csvName.toLowerCase();
 
@@ -459,9 +460,9 @@ function updateRepairMapFromCsv(csvText) {
 			else if (lowerName.includes("oven") || lowerName.includes("range") || lowerName.includes("fridge") || lowerName.includes("refrigerator") || lowerName.includes("disposal") || lowerName.includes("appliance")) assignedSubgroup = "Appliances";
 		}
 		else if (prefixCode === "ig") {
-			if (lowerName.includes("hvac") || lowerName.includes("ac") || lowerName.includes("compressor") || lowerName.includes("furnace")) assignedSubgroup = "HVAC";
+			if (lowerName.includes("hvac") || lowerName.includes("ac")) assignedSubgroup = "HVAC";
 			else if (lowerName.includes("panel") || lowerName.includes("wire") || lowerName.includes("breaker") || lowerName.includes("outlet") || lowerName.includes("gfi")) assignedSubgroup = "Electrical";
-			else if (lowerName.includes("heater") || lowerName.includes("water heater") || lowerName.includes("termite") || lowerName.includes("pest") || lowerName.includes("structural") || lowerName.includes("foundation")) assignedSubgroup = "Structural";
+			else if (lowerName.includes("heater") || lowerName.includes("water heater") || lowerName.includes("termite") || lowerName.includes("pest")) assignedSubgroup = "Structural";
 			else if (lowerName.includes("drywall") || lowerName.includes("sheetrock") || lowerName.includes("insulation") || lowerName.includes("tape")) assignedSubgroup = "Insulation & Drywall";
 		}
 		else if (prefixCode === "ex") {
@@ -487,7 +488,7 @@ function updateRepairMapFromCsv(csvText) {
 		const parsedCost = parseFloat(csvCost) || 0;
 		const determinedUnit = csvUnit || "ea.";
 		
-		// 🛠️ DYNAMIC ARCHITECTURE LAYER: Route directly to your prefix category key [STEM]
+		// DYNAMIC ARCHITECTURE SEEDER LAYER
 		if (targetCategoryKey && ROOM_REPAIR_MAP[targetCategoryKey]) {
 			const category = ROOM_REPAIR_MAP[targetCategoryKey];
 			category.Options ??= [];
@@ -495,13 +496,13 @@ function updateRepairMapFromCsv(csvText) {
 			const matchedOption = category.Options.find(opt => opt.name.trim().toLowerCase() === csvName.toLowerCase());
 			
 			if (matchedOption) {
-				// Path A: Overwrite price parameters on an existing item row
+				// Path A: Overwrite pricing variables on known items
 				matchedOption.cost = parsedCost;
 				matchedOption.unit = determinedUnit;
 				matchedOption.group = assignedSubgroup;
 				matchedOption.dataGroup = assignedSubgroup;
 			} else {
-				// Path B: INJECT BRAND NEW ITEM: Seeds your array map dynamically! [STEM]
+				// Path B: Dynamically seed and inject a brand new item entry row [STEM]
 				category.Options.push({
 					name: csvName.trim(),
 					cost: parsedCost,
