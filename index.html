@@ -271,93 +271,102 @@
 		/* TOUCH TARGET ACCESSIBILITY UPGRADE */
 		/* Increases sizing for finger-taps, making typing values effortless */
 		@media (max-width: 600px) {
-			/* 1. ORIGINAL CORE OVERRIDES (Cards Grid & Deal Analyzer Box Layouts) */
-			.houses-grid {
-				grid-template-columns: 1fr !important; 
-				gap: 15px;
-			}
-			.mobile-responsive-analyzer-grid {
-				grid-template-columns: repeat(2, 1fr) !important; 
-				gap: 12px;
-			}
-			/* 2. TASK FORM CONTAINER RE-ALIGNMENT (THREE-ROW MOBILE UPGRADE) */
-			.task-input-group {
-				display: flex !important;
-				flex-direction: column !important; /* Stacks elements vertically into clean lines */
-				gap: 12px !important;
-				width: 100% !important;
-				box-sizing: border-box;
-			}
-			
-			/* LINE 1: Shatters the flex-squeezing limits and forces full horizontal usage */
-			.input-row-with-media {
-				display: grid !important;
-				grid-template-columns: 1fr auto !important; /* 🎯 Room select dynamically consumes ALL remaining width, number stays compact! */
-				gap: 8px !important;
-				width: 100% !important;
-				max-width: 100% !important;
-				align-items: center;
-			}
-		
-			/* LINE 2 & 3 FORM OVERRIDES */
-			[id^="taskTitleInput-"] {
-				width: 100% !important;
-				display: block !important;
-				margin-top: 2px;
-			}
-			select[id^="lineItemInput-"] {
-				grid-column: span 1 !important; 
-				width: 100% !important;
-				display: block !important;
-				margin-top: 2px;
-			}
-			.budget-input-row {
-				display: grid !important;
-				grid-template-columns: 1fr 1fr !important; 
-				gap: 10px !important;
-				margin-top: 4px;
-			}
-		
-			/* 3. COMBINED TOUCH TARGET ACCESSIBILITY UPGRADE */
-			.mobile-responsive-analyzer-grid input, 
-			.house-card button, 
-			.house-card select,
-			.task-input-group select,
-			.task-input-group input,
-			.task-input-group button,
-			#taskRoomSelect,
-			#taskNumSelect,
-			[id^="taskRoomSelect-"],
-			[id^="taskNumSelect-"],
-			[id^="taskTitleInput-"],
-			[id^="lineItemInput-"] {
-				padding: 14px 10px !important; 
-				font-size: 15px !important;    
-				height: auto !important;
-				min-height: 48px !important;   
-				box-sizing: border-box !important;
-				display: inline-block !important; 
-			}
-		
-			/* =========================================================================
-			   🎯 RE-TARGETED ACCESSIBILITY WIDTH EXPANSION
-			   ========================================================================= */
-			/* Overrides the flex-squeezing rules, forcing ONLY the task room dropdown 
-			   to swell horizontally and perfectly consume the whitespace gap! */
-			#taskRoomSelect,
-			[id^="taskRoomSelect-"] {
-				width: 100% !important;
-				max-width: 100% !important;
-				flex-grow: 1 !important; /* Multiplier commands it to stretch wide */
-			}
-			
-			/* Keeps the room number box small and standard on the right side of the card */
-			#taskNumSelect,
-			[id^="taskNumSelect-"] {
-				width: 70px !important;
-				max-width: 70px !important;
-			}
-		}
+	
+	/* 1. MASTER SCOREBOARD GRID OVERRIDES */
+	.houses-grid {
+		grid-template-columns: 1fr !important; 
+		gap: 15px;
+	}
+	.mobile-responsive-analyzer-grid {
+		grid-template-columns: repeat(2, 1fr) !important; 
+		gap: 12px;
+	}
+	
+	/* 2. TASK FORM CONTAINER RE-ALIGNMENT (THREE-ROW MOBILE UPGRADE) */
+	.task-input-group {
+		display: flex !important;
+		flex-direction: column !important; /* Stacks elements vertically into clean line levels */
+		gap: 12px !important;
+		width: 100% !important;
+		box-sizing: border-box !important;
+	}
+	
+	/* LINE 1 DETONATOR: Explicitly shifts this from display:flex to a clean grid.
+	   By splitting the row 3fr to 1fr, it gives your element massive space parameters! */
+	.input-row-with-media {
+		display: grid !important;
+		grid-template-columns: 3fr 1fr !important; /* 75% Room menu width, 25% number input width */
+		gap: 8px !important;
+		width: 100% !important;
+		max-width: 100% !important; /* Strips master whitespace barriers completely */
+		align-items: center !important;
+	}
+
+	/* LINE 2 & 3 FORM OVERRIDES */
+	[id^="taskTitleInput-"] {
+		width: 100% !important;
+		max-width: 100% !important;
+		display: block !important;
+		margin-top: 2px;
+	}
+	select[id^="lineItemInput-"] {
+		grid-column: span 1 !important; 
+		width: 100% !important;
+		max-width: 100% !important;
+		display: block !important;
+		margin-top: 2px;
+	}
+	.budget-input-row {
+		display: grid !important;
+		grid-template-columns: 1fr 1fr !important; 
+		gap: 10px !important;
+		width: 100% !important;
+		max-width: 100% !important;
+		margin-top: 4px;
+	}
+
+	/* 3. COMBINED TOUCH TARGET ACCESSIBILITY UPGRADE */
+	.mobile-responsive-analyzer-grid input, 
+	.house-card button, 
+	.house-card select,
+	.task-input-group select,
+	.task-input-group input,
+	.task-input-group button,
+	#taskRoomSelect,
+	#taskNumSelect,
+	[id^="taskRoomSelect-"],
+	[id^="taskNumSelect-"],
+	[id^="taskTitleInput-"],
+	[id^="lineItemInput-"] {
+		padding: 14px 10px !important; /* Thicker padding for fat-finger taps */
+		font-size: 15px !important;    /* Boost text clarity on small mobile displays */
+		height: auto !important;
+		min-height: 48px !important;   
+		box-sizing: border-box !important;
+		display: block !important; /* 🎯 FORCES ENGINE BREAK: Tears down all legacy flex constraints! */
+	}
+
+	/* =========================================================================
+	   🎯 HIGH-SPECIFICITY OVERRIDE: EXPAND TASK ROOM SELECTOR ONLY WIDTH-WISE
+	   ========================================================================= */
+	/* Direct parent-nested identifiers target your select dropdown box to swell 
+	   horizontally width-wise across its entire 75% grid allocation space! [STEM] */
+	.task-input-group .input-row-with-media select#taskRoomSelect,
+	.task-input-group .input-row-with-media select[id^="taskRoomSelect-"],
+	.input-row-with-media select {
+		width: 100% !important;
+		max-width: 100% !important; /* Overwrites desktop max-width caps completely */
+		min-width: 100% !important; /* Prevents flex shrinking mechanisms from executing */
+		flex-grow: 1 !important;
+	}
+	
+	/* Explicitly pin the room number cell box width so it stays a small, compact target on the right */
+	.task-input-group .input-row-with-media input#taskNumSelect,
+	.task-input-group .input-row-with-media input[id^="taskNumSelect-"] {
+		width: 100% !important;
+		max-width: 70px !important; /* Keeps the numerical selector clean and boxed */
+	}
+}
     </style>
 </head>
 <body>
