@@ -367,8 +367,51 @@
 	const saveHouses = () => {localStorage.setItem('groupHousesMedia', JSON.stringify(houses));renderHouses();	}
 	let eCardId = null; // Tracks which card should stay open across renders
 	
-	
-	let ROOM_REPAIR_MAP = JSON.parse(localStorage.getItem('dynamicRoomRepairCatalog'));
+	const BASE_STATIC_REPAIR_MAP = {
+		"Bathroom": {
+			"Groups": ["Vanity & Countertop", "Tub & Shower", "Tile"], 
+			"Options": [
+				{ "name": "Toilet", "cost": 250.00, "unit": "ea.", "group": "Vanity & Countertop" }
+			]
+		},
+		"Kitchen": {
+			"Groups": ["Cabinets", "Countertops & Tile", "Appliances"], 
+			"Options": [
+				{ "name": "Wall Oven", "cost": 850.00, "unit": "ea.", "group": "Appliances" }
+			]
+		},
+		"Interior": {
+			"Groups": ["Flooring", "Paint", "Doors", "Pest Control"], 
+			"Options": [
+				{ "name": "Termite Treatment", "cost": 450.00, "unit": "ea.", "group": "Pest Control" }
+			]
+		},
+		"Systems & Structure": {
+			"Groups": ["HVAC", "Electrical", "Structural", "Insulation & Drywall"], 
+			"Options": [
+				{ "name": "Hot Water Heater", "cost": 1100.00, "unit": "ea.", "group": "Structural" }
+			]
+		},
+		"Exterior": {
+			"Groups": ["Fence", "Siding", "Windows", "Garage", "Trees"], 
+			"Options": [
+				{ "name": "Tree Removal", "cost": 600.00, "unit": "ea.", "group": "Trees" }
+			]
+		},
+		"Bedroom": {
+			"Groups": ["Flooring", "Paint", "Doors", "Closet"], 
+			"Options": [
+				{ "name": "Termite Treatment", "cost": 250.00, "unit": "ea.", "group": "Paint" }
+			]
+		},
+		"Living/Common Areas": {
+			"Groups": ["Flooring", "Paint", "Doors", "Lighting"], 
+			"Options": [
+				{ "name": "Termite Treatment", "cost": 300.00, "unit": "ea.", "group": "Paint" }
+			]
+		}
+	};
+	let ROOM_REPAIR_MAP = JSON.parse(localStorage.getItem('dynamicRoomRepairCatalog'))  || BASE_STATIC_REPAIR_MAP;
 	function updateRepairMapFromCsv(csvText) {
 		if (!csvText) return false;
 		const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== "");
