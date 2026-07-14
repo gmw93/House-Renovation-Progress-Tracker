@@ -420,34 +420,21 @@ function updateRepairMapFromCsv(csvText) {
 	let updateCount = 0;
 	
 	// Master category catalog map links
-	const categoryPrefixMap = {
-		"kt": "Kitchen",
-		"ba": "Bathroom",
-		"as": "Systems & Structure", 
-		"ex": "Exterior"
+	const categoryPrefixMap = {"kt": "Kitchen", "ba": "Bathroom", "as": "Systems & Structure", "ex": "Exterior"
 	};
-	
 	for (let i = 1; i < lines.length; i++) {
 		const columns = lines[i].split(',').map(col => col.replace(/["']/g, "").trim());
 		if (columns.length < 3) continue; 
-		
 		const [csvId, csvName, csvCost, csvUnit] = columns;
 		if (!csvName || !csvCost) continue; 
-		
-		let prefixCode = "";
-		let targetCategories = [];
-		
+		let [prefixCode, targetCategories] = ["", []];
 		if (csvId && csvId.includes('-')) {
 			prefixCode = csvId.split('-')[0].toLowerCase().trim();
-			if (categoryPrefixMap[prefixCode]) {
-				targetCategories = [categoryPrefixMap[prefixCode]];
-			}
+			if (categoryPrefixMap[prefixCode]) {targetCategories = [categoryPrefixMap[prefixCode]];}
 		}
-
 		// Hierarchical trade keyword checks
 		let assignedSubgroup = "General"; 
 		const lowerName = csvName.toLowerCase();
-
 		// =========================================================================
 		// 🎯 TRACK 1: EXTRACT THE SUBGROUP NAME FIRST BASED ON KEYWORDS [STEM]
 		// =========================================================================
@@ -483,7 +470,6 @@ function updateRepairMapFromCsv(csvText) {
 			else if (lowerName.includes("closet") || lowerName.includes("shelf") || lowerName.includes("shelving")) assignedSubgroup = "Closet";
 			else if (lowerName.includes("light") || lowerName.includes("fixture") || lowerName.includes("recessed") || lowerName.includes("ceiling fan")) assignedSubgroup = "Lighting";
 		}
-
 		// =========================================================================
 		// 🎯 TRACK 2: SMART CONDITIONAL ROUTER FOR THE "ig-" PREFIX CODE [STEM]
 		// =========================================================================
@@ -506,10 +492,7 @@ function updateRepairMapFromCsv(csvText) {
 				targetCategories = ["Interior/General", "Bedroom", "Living/Common Areas"];
 			}
 		}
-
-		const parsedCost = parseFloat(csvCost) || 0;
-		const determinedUnit = csvUnit || "ea.";
-		
+		const [parsedCost, determinedUnit] = [parseFloat(csvCost) || 0, csvUnit || "ea."]
 		// =========================================================================
 		// 🚀 TRACK 3: SEEDER INTEGRATION PIPELINE
 		// =========================================================================
@@ -520,20 +503,13 @@ function updateRepairMapFromCsv(csvText) {
 					category.Options ??= [];
 					
 					const matchedOption = category.Options.find(opt => opt.name.trim().toLowerCase() === csvName.toLowerCase());
-					
 					if (matchedOption) {
 						matchedOption.cost = parsedCost;
 						matchedOption.unit = determinedUnit;
 						matchedOption.group = assignedSubgroup;
 						matchedOption.dataGroup = assignedSubgroup;
 					} else {
-						category.Options.push({
-							name: csvName.trim(),
-							cost: parsedCost,
-							unit: determinedUnit,
-							group: assignedSubgroup,
-							dataGroup: assignedSubgroup
-						});
+						category.Options.push({name: csvName.trim(), cost: parsedCost, unit: determinedUnit, group: assignedSubgroup, dataGroup: assignedSubgroup});
 					}
 					updateCount++;
 				}
