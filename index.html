@@ -350,9 +350,6 @@
 				box-sizing: border-box !important;
 			}
 		
-			/* =========================================================================
-			   🎯 TARGETED TASK ROOM SELECTOR ACCESSIBILITY OVERRIDE
-			   ========================================================================= */
 			/* Command only the room dropdown to swell horizontally inside its 75% mobile layout slot,
 			   while forcing the room number box to remain a small, clean target on the right edge! */
 			#taskRoomSelect,
@@ -362,7 +359,111 @@
 				min-width: 100% !important;
 				font-weight: bold !important;
 			}
+		/* Transforms tiny cramped list items into spacious, highly readable cards */
+		.super-group-list li,
+		li[class*="task-item-row"],
+		li[class*="completed"] {
+			display: flex !important;
+			flex-direction: column !important; /* Stack task parts vertically */
+			align-items: flex-start !important;
+			justify-content: flex-start !important;
+			gap: 12px !important;
+			padding: 16px 14px !important;    /* Spacious inside margins */
+			background: #ffffff !important;
+			border-radius: 8px !important;
+			border: 1px solid #e2e8f0 !important; /* Box layout format looks like a card */
+			margin-bottom: 12px !important;
+			width: 100% !important;
+			box-sizing: border-box !important;
+			position: relative !important;
 		}
+	
+		/* TASK TITLE TEXT LINE (TOP TIER PANEL) */
+		.super-group-list li > span:nth-of-type(1),
+		.task-details-pane,
+		.task-title-text {
+			display: flex !important;
+			align-items: flex-start !important;
+			gap: 8px !important;
+			width: 100% !important;
+			font-size: 16px !important; /* Large, bold font clarity on vertical displays */
+			line-height: 1.4 !important;
+			color: #1a202c !important;
+		}
+	
+		.line-item-text {
+			display: inline-block !important;
+			font-size: 14px !important;
+			color: #4a5568 !important;
+			font-weight: normal !important;
+		}
+	
+		/* COST CALCULATOR BADGE GRID (MIDDLE TIER PANEL) */
+		.task-budget-badge,
+		.super-group-list li > span[class*="task-budget-badge"] {
+			display: block !important;
+			width: 100% !important;
+			font-size: 14px !important;
+			color: #2d3748 !important;
+			background: #f7fafc !important; /* Clean summary background panel */
+			padding: 8px 10px !important;
+			border-radius: 6px !important;
+			border-left: 3px solid #2ec4b6 !important; /* Highlighting bar emphasizes price totals */
+			box-sizing: border-box !important;
+			margin: 2px 0 !important;
+		}
+		
+		.task-budget-badge strong {
+			font-size: 16px !important; /* Blow up the multiplied total price figure text size */
+			color: #000000 !important;
+		}
+	
+		/* ACTIONS & BADGES FOOTER BAR (BOTTOM TIER PANEL) */
+		.assigned-room,
+		.super-group-list li > span[class*="assigned-room"] {
+			display: inline-block !important;
+			font-size: 12px !important;
+			padding: 6px 12px !important;
+			border-radius: 20px !important; /* Thick pill format */
+			background: #edf2f7 !important;
+			color: #2b6cb0 !important;
+			font-weight: bold !important;
+			margin: 4px 0 !important;
+		}
+	
+		/* Group photo buttons and thumbnails into clean rows */
+		.task-pricing-pane,
+		.super-group-list li > label.upload-label,
+		.super-group-list li > div.task-img-wrapper {
+			margin-left: 0 !important;
+			width: auto !important;
+			display: inline-flex !important;
+			align-items: center !important;
+			gap: 8px !important;
+		}
+	
+		.super-group-list li > label.upload-label {
+			background: #edf2f7 !important;
+			border: 1px solid #cbd5e0 !important;
+			padding: 10px 16px !important; /* Massive thumb target click size */
+			border-radius: 6px !important;
+			font-size: 14px !important;
+			cursor: pointer !important;
+		}
+	
+		/* FLOATING CORNER DELETE BUTTON */
+		.super-group-list li > button.del-btn,
+		.super-group-list li > button[class*="pill-del-btn"] {
+			position: absolute !important;
+			top: 12px !important;
+			right: 12px !important;
+			padding: 8px !important;
+			font-size: 16px !important;
+			background: transparent !important;
+			color: #a0aec0 !important;
+			border: none !important;
+		}
+	}
     </style>
 </head>
 <body>
