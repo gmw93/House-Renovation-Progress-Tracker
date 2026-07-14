@@ -83,7 +83,6 @@
 		/* TOUCH TARGET ACCESSIBILITY UPGRADE */
 		/* Increases sizing for finger-taps, making typing values effortless */
 		@media (max-width: 600px) {
-			/* 1. ORIGINAL CORE OVERRIDES (Cards Grid & Deal Analyzer Box Layouts) */
 			.houses-grid {
 				grid-template-columns: 1fr !important; 
 				gap: 15px;
@@ -98,6 +97,7 @@
 				flex-direction: column !important; /* Stacks elements vertically into clean lines */
 				gap: 12px !important;
 				width: 100% !important;
+				max-width: 100% !important; /* 🎯 CHANGE: Unlocks parent full-width horizontally */
 				box-sizing: border-box;
 			}
 			/* LINE 1: Force room select and room number input to take up the full first line */
@@ -107,12 +107,14 @@
 				grid-template-columns: 3fr 1fr !important; 
 				gap: 8px !important;
 				width: 100% !important;
+				max-width: 100% !important; /* 🎯 CHANGE: Shatters white space limits on Line 1 */
 				align-items: center;
 			}
 			/* LINE 2 & 3 FORM OVERRIDES */
 			/* Push the Task Title text input box down to take up 100% of the next line */
 			[id^="taskTitleInput-"] {
 				width: 100% !important;
+				max-width: 100% !important; /* 🎯 CHANGE: Protects horizontal flow */
 				display: block !important;
 				margin-top: 2px;
 			}
@@ -120,6 +122,7 @@
 			select[id^="lineItemInput-"] {
 				grid-column: span 1 !important; /* Clears grid constraints */
 				width: 100% !important;
+				max-width: 100% !important; /* 🎯 CHANGE: Protects horizontal flow */
 				display: block !important;
 				margin-top: 2px;
 			}
@@ -129,6 +132,7 @@
 				grid-template-columns: 1fr 1fr !important; /* Split price and quantity side-by-side */
 				gap: 10px !important;
 				width: 100% !important;
+				max-width: 100% !important; /* 🎯 CHANGE: Protects horizontal flow */
 				margin-top: 4px;
 			}
 			/* 3. COMBINED TOUCH TARGET ACCESSIBILITY UPGRADE */
@@ -152,17 +156,8 @@
 				min-height: 48px !important;   
 				box-sizing: border-box !important;
 				display: inline-block !important; /* Guarantees the browser cannot warp or crush visibility */
-			}
-
-			/* =========================================================================
-			   🎯 NEW ADDITION: SHATTER DESKTOP MAX-WIDTH CONSTRAINTS ON ROOM SELECT ONLY
-			   ========================================================================= */
-			/* This selectively commands the task form dropdown to swell outward and consume 
-			   100% of its wider 3fr grid cell width-wise, cleanly consuming the whitespace! */
-			#taskRoomSelect,
-			[id^="taskRoomSelect-"] {
-				max-width: 100% !important;
-				width: 100% !important;
+				width: 100% !important;        /* 🎯 CHANGE: Forces every item cell to expand edge-to-edge horizontally */
+				max-width: 100% !important;    /* 🎯 CHANGE: Prevents elements from clipping or stopping midway */
 			}
 		}
         .house-card {
@@ -381,7 +376,7 @@
 				<!-- Preserved your exact onsubmit preventDefault handling logic -->
 				<form class="input-section" onsubmit="event.preventDefault(); handleAdd();">
 					<input type="text" id="newHouseName" placeholder="New House name..." autocomplete="off">
-					<button class="f-bold add-btn" type="submit">Add</button>
+					<button class="f-bold add-btn" type="submit">+</button>
 				</form>
 			</div>
 		</div>
