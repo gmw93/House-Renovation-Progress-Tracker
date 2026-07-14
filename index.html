@@ -419,14 +419,12 @@ function updateRepairMapFromCsv(csvText) {
 	
 	let updateCount = 0;
 	
+	// Master category catalog map links
 	const categoryPrefixMap = {
-		"ig": "Interior",            
 		"kt": "Kitchen",
 		"ba": "Bathroom",
 		"as": "Systems & Structure", 
-		"ex": "Exterior",
-		"br": "Bedroom",
-		"lv": "Living/Common Areas"  
+		"ex": "Exterior"
 	};
 	
 	for (let i = 1; i < lines.length; i++) {
@@ -436,82 +434,110 @@ function updateRepairMapFromCsv(csvText) {
 		const [csvId, csvName, csvCost, csvUnit] = columns;
 		if (!csvName || !csvCost) continue; 
 		
-		let targetCategoryKey = null;
 		let prefixCode = "";
+		let targetCategories = [];
 		
 		if (csvId && csvId.includes('-')) {
-			// 🎯 FIXED SYNTAX POINTER: Added [0] to lower-case only the extracted string prefix token!
 			prefixCode = csvId.split('-')[0].toLowerCase().trim();
-			targetCategoryKey = categoryPrefixMap[prefixCode] || null;
+			if (categoryPrefixMap[prefixCode]) {
+				targetCategories = [categoryPrefixMap[prefixCode]];
+			}
 		}
 
-		// 🎯 HIERARCHICAL 19-SUBGROUP MATRIX RESOLVER
+		// Hierarchical trade keyword checks
 		let assignedSubgroup = "General"; 
 		const lowerName = csvName.toLowerCase();
 
+		// =========================================================================
+		// 🎯 TRACK 1: EXTRACT THE SUBGROUP NAME FIRST BASED ON KEYWORDS [STEM]
+		// =========================================================================
 		if (prefixCode === "ba") {
 			if (lowerName.includes("toilet") || lowerName.includes("vanity") || lowerName.includes("sink") || lowerName.includes("faucet") || lowerName.includes("counter")) assignedSubgroup = "Vanity & Countertop";
-			else if (lowerName.includes("tub") || lowerName.includes("shower") || lowerName.includes("valve") || lowerName.includes("fiberglass")) assignedSubgroup = "Tub & Shower";
-			else if (lowerName.includes("tile") || lowerName.includes("grout") || lowerName.includes("ceramic")) assignedSubgroup = "Tile";
+			else if (lowerName.includes("tub") || lowerName.includes("shower") || lowerName.includes("valve")) assignedSubgroup = "Tub & Shower";
+			else if (lowerName.includes("tile") || lowerName.includes("grout")) assignedSubgroup = "Tile";
 		}
 		else if (prefixCode === "kt") {
-			if (lowerName.includes("cabinet") || lowerName.includes("pantry") || lowerName.includes("hinge")) assignedSubgroup = "Cabinets";
-			else if (lowerName.includes("counter") || lowerName.includes("tile") || lowerName.includes("backsplash") || lowerName.includes("granite")) assignedSubgroup = "Countertops & Tile";
-			else if (lowerName.includes("oven") || lowerName.includes("range") || lowerName.includes("fridge") || lowerName.includes("refrigerator") || lowerName.includes("disposal") || lowerName.includes("appliance")) assignedSubgroup = "Appliances";
-		}
-		else if (prefixCode === "ig") {
-			if (lowerName.includes("hvac") || lowerName.includes("ac")) assignedSubgroup = "HVAC";
-			else if (lowerName.includes("panel") || lowerName.includes("wire") || lowerName.includes("breaker") || lowerName.includes("outlet") || lowerName.includes("gfi")) assignedSubgroup = "Electrical";
-			else if (lowerName.includes("heater") || lowerName.includes("water heater") || lowerName.includes("termite") || lowerName.includes("pest")) assignedSubgroup = "Structural";
-			else if (lowerName.includes("drywall") || lowerName.includes("sheetrock") || lowerName.includes("insulation") || lowerName.includes("tape")) assignedSubgroup = "Insulation & Drywall";
+			if (lowerName.includes("cabinet") || lowerName.includes("pantry")) assignedSubgroup = "Cabinets";
+			else if (lowerName.includes("counter") || lowerName.includes("tile") || lowerName.includes("backsplash")) assignedSubgroup = "Countertops & Tile";
+			else if (lowerName.includes("oven") || lowerName.includes("range") || lowerName.includes("fridge") || lowerName.includes("refrigerator") || lowerName.includes("disposal")) assignedSubgroup = "Appliances";
 		}
 		else if (prefixCode === "ex") {
 			if (lowerName.includes("fence") || lowerName.includes("gate") || lowerName.includes("post")) assignedSubgroup = "Fence";
 			else if (lowerName.includes("siding") || lowerName.includes("fascia")) assignedSubgroup = "Siding";
-			else if (lowerName.includes("window") || lowerName.includes("glass") || lowerName.includes("screen")) assignedSubgroup = "Windows";
+			else if (lowerName.includes("window") || lowerName.includes("glass")) assignedSubgroup = "Windows";
 			else if (lowerName.includes("garage") || lowerName.includes("overhead door")) assignedSubgroup = "Garage";
-			else if (lowerName.includes("tree") || lowerName.includes("stump") || lowerName.includes("removal") || lowerName.includes("trimming")) assignedSubgroup = "Trees";
+			else if (lowerName.includes("tree") || lowerName.includes("stump") || lowerName.includes("removal")) assignedSubgroup = "Trees";
 		}
-		else if (prefixCode === "br") {
-			if (lowerName.includes("floor") || lowerName.includes("hardwood") || lowerName.includes("carpet") || lowerName.includes("laminate") || lowerName.includes("vinyl")) assignedSubgroup = "Flooring";
-			else if (lowerName.includes("paint") || lowerName.includes("roll") || lowerName.includes("primer") || lowerName.includes("wall")) assignedSubgroup = "Paint";
-			else if (lowerName.includes("door") || lowerName.includes("pre-hung") || lowerName.includes("knob")) assignedSubgroup = "Doors";
+		else if (prefixCode === "as") {
+			if (lowerName.includes("hvac") || lowerName.includes("ac") || lowerName.includes("compressor") || lowerName.includes("furnace")) assignedSubgroup = "HVAC";
+			else if (lowerName.includes("panel") || lowerName.includes("wire") || lowerName.includes("breaker") || lowerName.includes("outlet")) assignedSubgroup = "Electrical";
+			else if (lowerName.includes("heater") || lowerName.includes("water heater") || lowerName.includes("structural") || lowerName.includes("foundation")) assignedSubgroup = "Structural";
+			else if (lowerName.includes("drywall") || lowerName.includes("sheetrock") || lowerName.includes("insulation")) assignedSubgroup = "Insulation & Drywall";
+		}
+		// THE COMBINED IG LIST RE-CLASSIFIER KEYWORDS
+		else if (prefixCode === "ig") {
+			if (lowerName.includes("termite") || lowerName.includes("pest") || lowerName.includes("bug") || lowerName.includes("spray")) assignedSubgroup = "Pest Control";
+			else if (lowerName.includes("floor") || lowerName.includes("hardwood") || lowerName.includes("carpet") || lowerName.includes("vinyl") || lowerName.includes("laminate")) assignedSubgroup = "Flooring";
+			else if (lowerName.includes("paint") || lowerName.includes("wall") || lowerName.includes("roll") || lowerName.includes("primer")) assignedSubgroup = "Paint & Wall Repair";
+			else if (lowerName.includes("door") || lowerName.includes("pre-hung") || lowerName.includes("knob") || lowerName.includes("hardware") || lowerName.includes("bifold") || lowerName.includes("entry door")) assignedSubgroup = "Doors";
 			else if (lowerName.includes("closet") || lowerName.includes("shelf") || lowerName.includes("shelving")) assignedSubgroup = "Closet";
+			else if (lowerName.includes("light") || lowerName.includes("fixture") || lowerName.includes("recessed") || lowerName.includes("ceiling fan")) assignedSubgroup = "Lighting";
 		}
-		else if (prefixCode === "lv") {
-			if (lowerName.includes("floor") || lowerName.includes("hardwood") || lowerName.includes("carpet") || lowerName.includes("laminate") || lowerName.includes("vinyl")) assignedSubgroup = "Flooring";
-			else if (lowerName.includes("paint") || lowerName.includes("roll") || lowerName.includes("primer") || lowerName.includes("wall")) assignedSubgroup = "Paint";
-			else if (lowerName.includes("door") || lowerName.includes("pre-hung") || lowerName.includes("knob")) assignedSubgroup = "Doors";
-			else if (lowerName.includes("light") || lowerName.includes("lighting") || lowerName.includes("recessed") || lowerName.includes("fixture") || lowerName.includes("ceiling fan")) assignedSubgroup = "Lighting";
+
+		// =========================================================================
+		// 🎯 TRACK 2: SMART CONDITIONAL ROUTER FOR THE "ig-" PREFIX CODE [STEM]
+		// =========================================================================
+		// Maps your 19 custom subgroups character-for-character to their exact room restrictions!
+		if (prefixCode === "ig") {
+			if (assignedSubgroup === "Pest Control" || assignedSubgroup === "Paint & Wall Repair") {
+				// Pest Control and Paint & Wall Repair only exist inside Interior/General [Claim]
+				targetCategories = ["Interior/General"];
+			} 
+			else if (assignedSubgroup === "Closet") {
+				// Closet tasks only exist inside Bedroom [Claim]
+				targetCategories = ["Bedroom"];
+			} 
+			else if (assignedSubgroup === "Lighting") {
+				// Lighting tasks only exist inside Living/Common Areas [Claim]
+				targetCategories = ["Living/Common Areas"];
+			} 
+			else if (assignedSubgroup === "Flooring" || assignedSubgroup === "Doors") {
+				// Flooring and Doors belong inside ALL THREE components simultaneously! [Claim]
+				targetCategories = ["Interior/General", "Bedroom", "Living/Common Areas"];
+			}
 		}
-		
+
 		const parsedCost = parseFloat(csvCost) || 0;
 		const determinedUnit = csvUnit || "ea.";
 		
-		// DYNAMIC ARCHITECTURE SEEDER LAYER
-		if (targetCategoryKey && ROOM_REPAIR_MAP[targetCategoryKey]) {
-			const category = ROOM_REPAIR_MAP[targetCategoryKey];
-			category.Options ??= [];
-			
-			const matchedOption = category.Options.find(opt => opt.name.trim().toLowerCase() === csvName.toLowerCase());
-			
-			if (matchedOption) {
-				// Path A: Overwrite pricing variables on known items
-				matchedOption.cost = parsedCost;
-				matchedOption.unit = determinedUnit;
-				matchedOption.group = assignedSubgroup;
-				matchedOption.dataGroup = assignedSubgroup;
-			} else {
-				// Path B: Dynamically seed and inject a brand new item entry row [STEM]
-				category.Options.push({
-					name: csvName.trim(),
-					cost: parsedCost,
-					unit: determinedUnit,
-					group: assignedSubgroup,
-					dataGroup: assignedSubgroup
-				});
-			}
-			updateCount++;
+		// =========================================================================
+		// 🚀 TRACK 3: SEEDER INTEGRATION PIPELINE
+		// =========================================================================
+		if (targetCategories.length > 0) {
+			targetCategories.forEach(categoryKey => {
+				if (ROOM_REPAIR_MAP[categoryKey]) {
+					const category = ROOM_REPAIR_MAP[categoryKey];
+					category.Options ??= [];
+					
+					const matchedOption = category.Options.find(opt => opt.name.trim().toLowerCase() === csvName.toLowerCase());
+					
+					if (matchedOption) {
+						matchedOption.cost = parsedCost;
+						matchedOption.unit = determinedUnit;
+						matchedOption.group = assignedSubgroup;
+						matchedOption.dataGroup = assignedSubgroup;
+					} else {
+						category.Options.push({
+							name: csvName.trim(),
+							cost: parsedCost,
+							unit: determinedUnit,
+							group: assignedSubgroup,
+							dataGroup: assignedSubgroup
+						});
+					}
+					updateCount++;
+				}
+			});
 		} 
 		// GLOBAL SAFETY FALLBACK SECTOR
 		else {
@@ -533,7 +559,7 @@ function updateRepairMapFromCsv(csvText) {
 	
 	if (updateCount > 0) {
 		localStorage.setItem('dynamicRoomRepairCatalog', JSON.stringify(ROOM_REPAIR_MAP));
-		console.log(`🎯 Dictionary Cached: Dynamically seeded and stored ${updateCount} unique line items!`);
+		console.log(`🎯 Dictionary Cached: Smart-routed and dynamically seeded ${updateCount} clean lines!`);
 	}
 	return updateCount > 0;
 }
