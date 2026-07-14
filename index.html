@@ -412,56 +412,83 @@
 		}
 	};
 	let ROOM_REPAIR_MAP = JSON.parse(localStorage.getItem('dynamicRoomRepairCatalog'))  || BASE_STATIC_REPAIR_MAP;
-	function updateRepairMapFromCsv(csvText) {
+function updateRepairMapFromCsv(csvText) {
 	if (!csvText) return false;
 	const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== "");
 	if (lines.length < 2) return false; 
 	
 	let updateCount = 0;
 	
-	// Skip the header row (i = 0) and iterate over your data rows
+	// 🛠️ THE PREFIX DICTIONARY MATRIX [STEM]
+	// Maps your custom spreadsheet ID codes straight to your exact database JSON keys!
+	const categoryPrefixMap = {
+		"ig": "Interior", // Fallback router handles general interior rows
+		"kt": "Kitchen",
+		"ba": "Bathroom",
+		"as": "Systems & Structure",
+		"ex": "Exterior"
+	};
+	
 	for (let i = 1; i < lines.length; i++) {
 		const columns = lines[i].split(',').map(col => col.replace(/["']/g, "").trim());
+		if (columns.length < 3) continue; 
 		
-		// 🛠️ THE INDEX ALIGNMENT HOOK:
-		// We leave the first array slot empty [ , ] to safely skip over the ID column!
-		// This assigns columns[1] to name, columns[2] to cost, columns[3] to unit, and columns[4] to subgroup [STEM].
-		const [, csvName, csvCost, csvUnit, csvSubgroup] = columns;
-		
-		// Validation gate: Ensure that at least a name and a cost cell exist on this row line
+		// Unpack all 5 variables cleanly from your side-by-side spreadsheet columns [STEM]
+		const [csvId, csvName, csvCost, csvUnit, csvSubgroup] = columns;
 		if (!csvName || !csvCost) continue; 
+		
+		let targetCategoryKey = null;
+		
+		// 🔍 PARSE ALPHANUMERIC PREFIX
+		// Extracts the letters before the dash from strings like "ba-01" or "kt-12" [STEM]
+		if (csvId && csvId.includes('-')) {
+			const prefixCode = csvId.split('-')[0].toLowerCase().trim();
+			targetCategoryKey = categoryPrefixMap[prefixCode] || null;
+		}
 		
 		const parsedCost = parseFloat(csvCost) || 0;
 		
-		// Cross-reference your master loop dictionary catalog
-		Object.keys(ROOM_REPAIR_MAP).forEach(categoryKey => {
-			const category = ROOM_REPAIR_MAP[categoryKey];
+		// ROUTING LAYER: If a valid category prefix was decoded, target ONLY that specific JSON key! [STEM]
+		if (targetCategoryKey && ROOM_REPAIR_MAP[targetCategoryKey]) {
+			const category = ROOM_REPAIR_MAP[targetCategoryKey];
 			if (category && category.Options) {
-				// Scan room options matching your case-insensitive text rules
 				const matchedOption = category.Options.find(opt => opt.name.trim().toLowerCase() === csvName.toLowerCase());
 				
 				if (matchedOption) {
-					// 1. Overwrite the dictionary entries with your custom spreadsheet numbers
 					matchedOption.cost = parsedCost;
 					if (csvUnit) matchedOption.unit = csvUnit;
-					
-					// 2. DYNAMIC GROUP TRANSFER HOOK:
-					// Updates the structural trade category inside your target database memory object
 					if (csvSubgroup) {
-						// Overwrites the internal tracking label (handles 'group' or 'dataGroup' keys cleanly)
 						matchedOption.group = csvSubgroup;
-						matchedOption.dataGroup = csvSubgroup; 
+						matchedOption.dataGroup = csvSubgroup;
 					}
 					updateCount++;
 				}
 			}
-		});
+		} 
+		// GLOBAL FALLBACK ROUTER: If the ID column is blank or the code doesn't match, 
+		// loop through all categories to look for a text name match as a backup safety net [STEM].
+		else {
+			Object.keys(ROOM_REPAIR_MAP).forEach(categoryKey => {
+				const category = ROOM_REPAIR_MAP[categoryKey];
+				if (category && category.Options) {
+					const matchedOption = category.Options.find(opt => opt.name.trim().toLowerCase() === csvName.toLowerCase());
+					if (matchedOption) {
+						matchedOption.cost = parsedCost;
+						if (csvUnit) matchedOption.unit = csvUnit;
+						if (csvSubgroup) {
+							matchedOption.group = csvSubgroup;
+							matchedOption.dataGroup = csvSubgroup;
+						}
+						updateCount++;
+					}
+				}
+			});
+		}
 	}
 	
 	if (updateCount > 0) {
-		// Commit updates cleanly to browser persistent localStorage cache parameters
 		localStorage.setItem('dynamicRoomRepairCatalog', JSON.stringify(ROOM_REPAIR_MAP));
-		console.log(`✅ Dictionary Cached Successfully: Preserved ${updateCount} base parameters.`);
+		console.log(`✅ Dictionary Cached: Mapped and preserved ${updateCount} routed base parameters.`);
 	}
 	return updateCount > 0;
 }
