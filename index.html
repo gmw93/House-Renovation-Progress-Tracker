@@ -625,12 +625,19 @@ function handleMapCsvUpload(fileInputEl) {
 			const prefix = onlyRoom ? 'house' : 'task';
 			const [roomSelectEl, numSelectEl] = scrapeFormFields([`${prefix}RoomSelect`, `${prefix}NumSelect`], houseId);
 			const r = roomSelectEl?.value || '';
-			const nEl = (r === "Bathroom" || r === "Bedroom") ? numSelectEl : null;
-			const formattedRoom = getRoomString(r, nEl?.value);
+			// 🎯 FIXED DATA HARVEST: If the specific form element returns null due to ID variations,
+			// automatically fall back to read the alternative numSelect input directly from the DOM! [STEM]
+			let rawNumVal = numSelectEl?.value;
+			if (!rawNumVal) {
+				const fallbackEl = document.getElementById(`roomNumSelect-${houseId}`) || document.getElementById(`taskNumSelect-${houseId}`);
+				rawNumVal = fallbackEl?.value;
+			}
+			// Pass the raw text string value directly into your pristine getRoomString function
+			const formattedRoom = getRoomString(r, rawNumVal);
 			if (!formattedRoom.trim()) {
 				console.warn(`🛑 BLOCKED INVALID INPUT: "${r}" requires a valid room number greater than 0.`);
-				alert(`Please provide a room number for your ${r}.`); // Optional user warning popup
-				return; // Exit early before updating database records
+				alert(`Please provide a room number for your ${r}.`); 
+				return; // Safe early exit: Blocks execution because the input was read as empty [STEM]
 			}
 			const house = houses.find(h => h.id === houseId);
 			const rExists = house.rooms.some(eR => eR.trim().toLowerCase() === formattedRoom.toLowerCase());
