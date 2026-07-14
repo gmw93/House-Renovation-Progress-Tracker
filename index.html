@@ -416,39 +416,102 @@ function updateRepairMapFromCsv(csvText) {
 	if (!csvText) return false;
 	const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== "");
 	if (lines.length < 2) return false; 
-	
 	let updateCount = 0;
-	
-	// 🛠️ THE PREFIX DICTIONARY MATRIX [STEM]
-	// Maps your custom spreadsheet ID codes straight to your exact database JSON keys!
-	const categoryPrefixMap = {
-		"ig": "Interior", // Fallback router handles general interior rows
-		"kt": "Kitchen",
-		"ba": "Bathroom",
-		"as": "Systems & Structure",
-		"ex": "Exterior"
-	};
-	
+	// THE CORE CATEGORY PREFIX ROUTER
+	const categoryPrefixMap = {"ig": "Interior/General","kt": "Kitchen", "ba": "Bathroom", "as": "Systems & Structure", "ex": "Exterior", "br": "Bedroom", "lv": "Living/Common Areas"};
 	for (let i = 1; i < lines.length; i++) {
 		const columns = lines[i].split(',').map(col => col.replace(/["']/g, "").trim());
 		if (columns.length < 3) continue; 
-		
-		// Unpack all 5 variables cleanly from your side-by-side spreadsheet columns [STEM]
-		const [csvId, csvName, csvCost, csvUnit, csvSubgroup] = columns;
+		const [csvId, csvName, csvCost, csvUnit] = columns;
 		if (!csvName || !csvCost) continue; 
-		
 		let targetCategoryKey = null;
-		
-		// 🔍 PARSE ALPHANUMERIC PREFIX
-		// Extracts the letters before the dash from strings like "ba-01" or "kt-12" [STEM]
+		let prefixCode = "";
+		// Parse alphanumeric category prefix codes (e.g., "ba-01" -> prefixCode = "ba")
 		if (csvId && csvId.includes('-')) {
-			const prefixCode = csvId.split('-')[0].toLowerCase().trim();
+			prefixCode = csvId.split('-')[0].toLowerCase().trim();
 			targetCategoryKey = categoryPrefixMap[prefixCode] || null;
+		}
+		// =========================================================================
+		// 🎯 THE 19-SUBGROUP HIERARCHICAL MATRIX RESOLVER [STEM]
+		// =========================================================================
+		let assignedSubgroup = "General"; // Ultimate fallback tracker safety net
+		const lowerName = csvName.toLowerCase();
+
+		// ROUTE ALPHA: BATHROOM TRAFFIC LAYERS
+		if (prefixCode === "ba") {
+			if (lowerName.includes("toilet") || lowerName.includes("vanity") || lowerName.includes("sink") || lowerName.includes("faucet") || lowerName.includes("counter")) {
+				assignedSubgroup = "Vanity & Countertop";
+			} else if (lowerName.includes("tub") || lowerName.includes("shower") || lowerName.includes("valve") || lowerName.includes("fiberglass")) {
+				assignedSubgroup = "Tub & Shower";
+			} else if (lowerName.includes("tile") || lowerName.includes("grout") || lowerName.includes("ceramic")) {
+				assignedSubgroup = "Tile";
+			}
+		}
+		// ROUTE BETA: KITCHEN TRAFFIC LAYERS
+		else if (prefixCode === "kt") {
+			if (lowerName.includes("cabinet") || lowerName.includes("pantry") || lowerName.includes("hinge")) {
+				assignedSubgroup = "Cabinets";
+			} else if (lowerName.includes("counter") || lowerName.includes("tile") || lowerName.includes("backsplash") || lowerName.includes("granite")) {
+				assignedSubgroup = "Countertops & Tile";
+			} else if (lowerName.includes("oven") || lowerName.includes("range") || lowerName.includes("fridge") || lowerName.includes("refrigerator") || lowerName.includes("disposal") || lowerName.includes("appliance")) {
+				assignedSubgroup = "Appliances";
+			}
+		}
+		// ROUTE GAMMA: INTERIOR / GENERAL TRAFFIC LAYERS
+		else if (prefixCode === "ig") {
+			if (lowerName.includes("hvac") || lowerName.includes("ac") || lowerName.includes("compressor") || lowerName.includes("furnace") || lowerName.includes("heat pump")) {
+				assignedSubgroup = "HVAC";
+			} else if (lowerName.includes("panel") || lowerName.includes("wire") || lowerName.includes("breaker") || lowerName.includes("outlet") || lowerName.includes("gfi") || lowerName.includes("electrical")) {
+				assignedSubgroup = "Electrical";
+			} else if (lowerName.includes("heater") || lowerName.includes("water heater") || lowerName.includes("termite") || lowerName.includes("pest") || lowerName.includes("structural") || lowerName.includes("foundation")) {
+				// Safely auto-routes your structural hot water heater bounds natively
+				assignedSubgroup = "Structural";
+			} else if (lowerName.includes("drywall") || lowerName.includes("sheetrock") || lowerName.includes("insulation") || lowerName.includes("tape") || lowerName.includes("blueboard")) {
+				assignedSubgroup = "Insulation & Drywall";
+			}
+		}
+		// ROUTE DELTA: EXTERIOR TRAFFIC LAYERS
+		else if (prefixCode === "ex") {
+			if (lowerName.includes("fence") || lowerName.includes("gate") || lowerName.includes("post")) {
+				assignedSubgroup = "Fence";
+			} else if (lowerName.includes("siding") || lowerName.includes("fascia") || lowerName.includes("stucco")) {
+				assignedSubgroup = "Siding";
+			} else if (lowerName.includes("window") || lowerName.includes("glass") || lowerName.includes("screen")) {
+				assignedSubgroup = "Windows";
+			} else if (lowerName.includes("garage") || lowerName.includes("overhead door") || lowerName.includes("opener")) {
+				assignedSubgroup = "Garage";
+			} else if (lowerName.includes("tree") || lowerName.includes("stump") || lowerName.includes("branch") || lowerName.includes("removal") || lowerName.includes("trimming")) {
+				assignedSubgroup = "Trees";
+			}
+		}
+		// ROUTE EPSILON: BEDROOM TRAFFIC LAYERS
+		else if (prefixCode === "br") {
+			if (lowerName.includes("floor") || lowerName.includes("hardwood") || lowerName.includes("carpet") || lowerName.includes("laminate") || lowerName.includes("vinyl")) {
+				assignedSubgroup = "Flooring";
+			} else if (lowerName.includes("paint") || lowerName.includes("roll") || lowerName.includes("primer") || lowerName.includes("wall")) {
+				assignedSubgroup = "Paint";
+			} else if (lowerName.includes("door") || lowerName.includes("pre-hung") || lowerName.includes("knob") || lowerName.includes("hinge")) {
+				assignedSubgroup = "Doors";
+			} else if (lowerName.includes("closet") || lowerName.includes("shelf") || lowerName.includes("shelving")) {
+				assignedSubgroup = "Closet";
+			}
+		}
+		// ROUTE ZETA: LIVING / COMMON AREAS TRAFFIC LAYERS
+		else if (prefixCode === "lv") {
+			if (lowerName.includes("floor") || lowerName.includes("hardwood") || lowerName.includes("carpet") || lowerName.includes("laminate") || lowerName.includes("vinyl")) {
+				assignedSubgroup = "Flooring";
+			} else if (lowerName.includes("paint") || lowerName.includes("roll") || lowerName.includes("primer") || lowerName.includes("wall")) {
+				assignedSubgroup = "Paint";
+			} else if (lowerName.includes("door") || lowerName.includes("pre-hung") || lowerName.includes("knob")) {
+				assignedSubgroup = "Doors";
+			} else if (lowerName.includes("light") || lowerName.includes("lighting") || lowerName.includes("recessed") || lowerName.includes("fixture") || lowerName.includes("ceiling fan")) {
+				assignedSubgroup = "Lighting";
+			}
 		}
 		
 		const parsedCost = parseFloat(csvCost) || 0;
 		
-		// ROUTING LAYER: If a valid category prefix was decoded, target ONLY that specific JSON key! [STEM]
+		// ROUTING LAYER: If prefix matched, save directly to that specific dictionary array channel
 		if (targetCategoryKey && ROOM_REPAIR_MAP[targetCategoryKey]) {
 			const category = ROOM_REPAIR_MAP[targetCategoryKey];
 			if (category && category.Options) {
@@ -457,16 +520,15 @@ function updateRepairMapFromCsv(csvText) {
 				if (matchedOption) {
 					matchedOption.cost = parsedCost;
 					if (csvUnit) matchedOption.unit = csvUnit;
-					if (csvSubgroup) {
-						matchedOption.group = csvSubgroup;
-						matchedOption.dataGroup = csvSubgroup;
-					}
+					
+					// Core state synchronizations mapping your 19 trades cleanly [STEM]
+					matchedOption.group = assignedSubgroup;
+					matchedOption.dataGroup = assignedSubgroup;
 					updateCount++;
 				}
 			}
 		} 
-		// GLOBAL FALLBACK ROUTER: If the ID column is blank or the code doesn't match, 
-		// loop through all categories to look for a text name match as a backup safety net [STEM].
+		// SAFE SECTOR GLOBAL ROUTER FALLBACK
 		else {
 			Object.keys(ROOM_REPAIR_MAP).forEach(categoryKey => {
 				const category = ROOM_REPAIR_MAP[categoryKey];
@@ -475,10 +537,9 @@ function updateRepairMapFromCsv(csvText) {
 					if (matchedOption) {
 						matchedOption.cost = parsedCost;
 						if (csvUnit) matchedOption.unit = csvUnit;
-						if (csvSubgroup) {
-							matchedOption.group = csvSubgroup;
-							matchedOption.dataGroup = csvSubgroup;
-						}
+						
+						matchedOption.group = assignedSubgroup;
+						matchedOption.dataGroup = assignedSubgroup;
 						updateCount++;
 					}
 				}
@@ -488,7 +549,7 @@ function updateRepairMapFromCsv(csvText) {
 	
 	if (updateCount > 0) {
 		localStorage.setItem('dynamicRoomRepairCatalog', JSON.stringify(ROOM_REPAIR_MAP));
-		console.log(`✅ Dictionary Cached: Mapped and preserved ${updateCount} routed base parameters.`);
+		console.log(`✅ Dictionary Cached: Mapped and isolated ${updateCount} multi-group parameters.`);
 	}
 	return updateCount > 0;
 }
