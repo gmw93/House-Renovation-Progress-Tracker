@@ -153,6 +153,16 @@
 				box-sizing: border-box !important;
 				display: inline-block !important; /* Guarantees the browser cannot warp or crush visibility */
 			}
+			#taskRoomSelect,
+			[id^="taskRoomSelect-"] {
+				padding: 18px 12px !important; /* Thicker vertical padding for an extra-large thumb-tap footprint */
+				font-size: 17px !important;    /* Boosts text font size for crisp visibility */
+				font-weight: bold !important;  /* Bolds the characters to emphasize room settings */
+				height: auto !important;
+				min-height: 56px !important;   /* Extra thick boundary target */
+				box-sizing: border-box !important;
+				display: inline-block !important;
+			}
 		}
         .house-card {
             background: var(--card-bg); padding: 18px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column;
