@@ -271,102 +271,98 @@
 		/* TOUCH TARGET ACCESSIBILITY UPGRADE */
 		/* Increases sizing for finger-taps, making typing values effortless */
 		@media (max-width: 600px) {
-	
-	/* 1. MASTER SCOREBOARD GRID OVERRIDES */
-	.houses-grid {
-		grid-template-columns: 1fr !important; 
-		gap: 15px;
-	}
-	.mobile-responsive-analyzer-grid {
-		grid-template-columns: repeat(2, 1fr) !important; 
-		gap: 12px;
-	}
-	
-	/* 2. TASK FORM CONTAINER RE-ALIGNMENT (THREE-ROW MOBILE UPGRADE) */
-	.task-input-group {
-		display: flex !important;
-		flex-direction: column !important; /* Stacks elements vertically into clean line levels */
-		gap: 12px !important;
-		width: 100% !important;
-		box-sizing: border-box !important;
-	}
-	
-	/* LINE 1 DETONATOR: Explicitly shifts this from display:flex to a clean grid.
-	   By splitting the row 3fr to 1fr, it gives your element massive space parameters! */
-	.input-row-with-media {
-		display: grid !important;
-		grid-template-columns: 3fr 1fr !important; /* 75% Room menu width, 25% number input width */
-		gap: 8px !important;
-		width: 100% !important;
-		max-width: 100% !important; /* Strips master whitespace barriers completely */
-		align-items: center !important;
-	}
-
-	/* LINE 2 & 3 FORM OVERRIDES */
-	[id^="taskTitleInput-"] {
-		width: 100% !important;
-		max-width: 100% !important;
-		display: block !important;
-		margin-top: 2px;
-	}
-	select[id^="lineItemInput-"] {
-		grid-column: span 1 !important; 
-		width: 100% !important;
-		max-width: 100% !important;
-		display: block !important;
-		margin-top: 2px;
-	}
-	.budget-input-row {
-		display: grid !important;
-		grid-template-columns: 1fr 1fr !important; 
-		gap: 10px !important;
-		width: 100% !important;
-		max-width: 100% !important;
-		margin-top: 4px;
-	}
-
-	/* 3. COMBINED TOUCH TARGET ACCESSIBILITY UPGRADE */
-	.mobile-responsive-analyzer-grid input, 
-	.house-card button, 
-	.house-card select,
-	.task-input-group select,
-	.task-input-group input,
-	.task-input-group button,
-	#taskRoomSelect,
-	#taskNumSelect,
-	[id^="taskRoomSelect-"],
-	[id^="taskNumSelect-"],
-	[id^="taskTitleInput-"],
-	[id^="lineItemInput-"] {
-		padding: 14px 10px !important; /* Thicker padding for fat-finger taps */
-		font-size: 15px !important;    /* Boost text clarity on small mobile displays */
-		height: auto !important;
-		min-height: 48px !important;   
-		box-sizing: border-box !important;
-		display: block !important; /* 🎯 FORCES ENGINE BREAK: Tears down all legacy flex constraints! */
-	}
-
-	/* =========================================================================
-	   🎯 HIGH-SPECIFICITY OVERRIDE: EXPAND TASK ROOM SELECTOR ONLY WIDTH-WISE
-	   ========================================================================= */
-	/* Direct parent-nested identifiers target your select dropdown box to swell 
-	   horizontally width-wise across its entire 75% grid allocation space! [STEM] */
-	.task-input-group .input-row-with-media select#taskRoomSelect,
-	.task-input-group .input-row-with-media select[id^="taskRoomSelect-"],
-	.input-row-with-media select {
-		width: 100% !important;
-		max-width: 100% !important; /* Overwrites desktop max-width caps completely */
-		min-width: 100% !important; /* Prevents flex shrinking mechanisms from executing */
-		flex-grow: 1 !important;
-	}
-	
-	/* Explicitly pin the room number cell box width so it stays a small, compact target on the right */
-	.task-input-group .input-row-with-media input#taskNumSelect,
-	.task-input-group .input-row-with-media input[id^="taskNumSelect-"] {
-		width: 100% !important;
-		max-width: 70px !important; /* Keeps the numerical selector clean and boxed */
-	}
-}
+			/* 1. CORE DISCOVERY CARDS OVERRIDES */
+			.houses-grid {
+				grid-template-columns: 1fr !important; 
+				gap: 15px;
+			}
+			.mobile-responsive-analyzer-grid {
+				grid-template-columns: repeat(2, 1fr) !important; 
+				gap: 12px;
+			}
+			
+			/* =========================================================================
+			   📱 2. TASK FORM CONTAINER RE-ALIGNMENT (MOBILE DROP-DOWN SPLITTING)
+			   ========================================================================= */
+			.task-input-group {
+				display: flex !important;
+				flex-direction: column !important;
+				gap: 12px !important;
+				width: 100% !important;
+				box-sizing: border-box !important;
+			}
+			
+			/* Converts the row into a clean 2-column layout on small screens */
+			.input-row-with-media {
+				display: grid !important;
+				grid-template-columns: 3fr 1fr !important; /* Row 1: 75% Room select width, 25% Number box width */
+				gap: 10px !important;
+				width: 100% !important;
+				max-width: 100% !important;
+				align-items: center !important;
+			}
+		
+			/* 📝 ROW 2 OVERRIDE: Forces ONLY Task Title to break out and drop onto the next row width-wise! */
+			[id^="taskTitleInput-"] {
+				grid-column: span 2 !important; /* Stretches 100% horizontally width-wise */
+				width: 100% !important;
+				max-width: 100% !important;
+				display: block !important;
+				margin-top: 4px;
+			}
+		
+			/* 🔍 ROW 3 OVERRIDE: Forces ONLY Select Task to break out and drop onto the row below it! */
+			select[id^="lineItemInput-"] {
+				grid-column: span 2 !important; /* Stretches 100% horizontally width-wise */
+				width: 100% !important;
+				max-width: 100% !important;
+				display: block !important;
+				margin-top: 4px;
+			}
+		
+			/* 💰 ROW 4: Price Basis and Quantity Amounts Footer Row Layout */
+			.budget-input-row {
+				display: grid !important;
+				grid-template-columns: 1fr 1fr !important;
+				gap: 10px !important;
+				width: 100% !important;
+				max-width: 100% !important;
+				margin-top: 4px;
+			}
+		
+			/* 3. COMBINED TOUCH TARGET ACCESSIBILITY UPGRADE */
+			.mobile-responsive-analyzer-grid input, 
+			.house-card button, 
+			.house-card select,
+			.task-input-group select,
+			.task-input-group input,
+			.task-input-group button,
+			#taskRoomSelect,
+			#taskNumSelect,
+			[id^="taskRoomSelect-"],
+			[id^="taskNumSelect-"],
+			[id^="taskTitleInput-"],
+			[id^="lineItemInput-"] {
+				padding: 14px 10px !important; 
+				font-size: 15px !important;    
+				height: auto !important;
+				min-height: 48px !important;   
+				box-sizing: border-box !important;
+			}
+		
+			/* =========================================================================
+			   🎯 TARGETED TASK ROOM SELECTOR ACCESSIBILITY OVERRIDE
+			   ========================================================================= */
+			/* Command only the room dropdown to swell horizontally inside its 75% mobile layout slot,
+			   while forcing the room number box to remain a small, clean target on the right edge! */
+			#taskRoomSelect,
+			[id^="taskRoomSelect-"] {
+				width: 100% !important;
+				max-width: 100% !important;
+				min-width: 100% !important;
+				font-weight: bold !important;
+			}
+		}
     </style>
 </head>
 <body>
@@ -1260,27 +1256,19 @@ function handleMapCsvUpload(fileInputEl) {
 					<ul class="super-group-list">${tasksHtml || '<li>No checklist items added yet.</li>'}</ul>
 					<!-- Room-Input-Form, to add rooms to existing house -->
 					<form class="task-input-group" onsubmit="event.preventDefault(); handleAdd(${house.id});">
+						<!-- 🖥️ DESKTOP COMPACT ROW: All elements sit side-by-side naturally on wide viewports -->
 						<div class="input-row-with-media">
-							<select id="taskRoomSelect-${house.id}" 
-									onchange="
-									let rSel = document.getElementById('taskNumSelect-${house.id}'); 
-									let isNum = (this.value === 'Bathroom' || this.value === 'Bedroom');
-									if (rSel) {
-										rSel.style.display = isNum ? 'inline-block' : 'none'; 
-										if (!isNum) rSel.value = ''; 
-									}
-									const h = houses.find(x => x.id === ${house.id});
-									if(h){h.formTaskRoom = this.value; renderHouses();}">${roomOptions}</select>
-							<input type="number" id="taskNumSelect-${house.id}" min="1" placeholder="#" oninput="
-								const primaryNumSelect = document.getElementById('numSelect-${house.id}'); 
-								if (primaryNumSelect) primaryNumSelect.value = this.value;" 
-								style="max-width: 70px; display: ${taskRoom === 'Bathroom' || taskRoom === 'Bedroom' ? 'inline-block' : 'none'};">
+							<select id="taskRoomSelect-${house.id}" onchange="...">${roomOptions}</select>
+							
+							<input type="number" id="taskNumSelect-${house.id}" min="1" placeholder="#" oninput="..." 
+								style="max-width: 70px; display: ${house.formTaskRoom === 'Bathroom' || house.formTaskRoom === 'Bedroom' ? 'inline-block' : 'none'};">
+							
 							<input type="text" id="taskTitleInput-${house.id}" placeholder="Task Title">
-							<!-- INLINE AUTO-FILL CORRECTION: Populates base price into Cost field, defaults Quantity Amount field to 1 -->
-							<select id="lineItemInput-${house.id}" onchange="const opt = this.options[this.selectedIndex]; const isNone = opt.value === 'None'; document.getElementById('taskCostInput-${house.id}').value = isNone ? '' : opt.getAttribute('data-cost'); document.getElementById('taskQtyInput-${house.id}').value = isNone ? '' : '1'; document.getElementById('taskUnitInput-${house.id}').value = isNone ? '' : opt.getAttribute('data-unit');" style="min-width: 200px;">${dynamicTaskOptions}</select>
+							
+							<select id="lineItemInput-${house.id}" onchange="..." style="min-width: 200px;">${dynamicTaskOptions}</select>
 						</div>
+					
 						<div class="budget-input-row">
-							<!-- PROPER RE-ALIGNMENT: Clear input markers mapping costs and quantities distinctly -->
 							<span class="f-bold">Price Basis:</span>
 							<input type="number" id="taskCostInput-${house.id}" step="0.01" min="0" placeholder="Cost ($)">
 							<span class="f-bold">Amount Needed:</span>
