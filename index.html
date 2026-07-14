@@ -153,15 +153,16 @@
 				box-sizing: border-box !important;
 				display: inline-block !important; /* Guarantees the browser cannot warp or crush visibility */
 			}
+
+			/* =========================================================================
+			   🎯 NEW ADDITION: SHATTER DESKTOP MAX-WIDTH CONSTRAINTS ON ROOM SELECT ONLY
+			   ========================================================================= */
+			/* This selectively commands the task form dropdown to swell outward and consume 
+			   100% of its wider 3fr grid cell width-wise, cleanly consuming the whitespace! */
 			#taskRoomSelect,
 			[id^="taskRoomSelect-"] {
-				padding: 18px 12px !important; /* Thicker vertical padding for an extra-large thumb-tap footprint */
-				font-size: 17px !important;    /* Boosts text font size for crisp visibility */
-				font-weight: bold !important;  /* Bolds the characters to emphasize room settings */
-				height: auto !important;
-				min-height: 56px !important;   /* Extra thick boundary target */
-				box-sizing: border-box !important;
-				display: inline-block !important;
+				max-width: 100% !important;
+				width: 100% !important;
 			}
 		}
         .house-card {
