@@ -413,57 +413,85 @@
 	};
 	let ROOM_REPAIR_MAP = JSON.parse(localStorage.getItem('dynamicRoomRepairCatalog'))  || BASE_STATIC_REPAIR_MAP;
 	function updateRepairMapFromCsv(csvText) {
-		if (!csvText) return false;
-		const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== "");
-		if (lines.length < 2) return false; 
-		let updateCount = 0;
-		for (let i = 1; i < lines.length; i++) {
-			const columns = lines[i].split(',').map(col => col.replace(/["']/g, "").trim());
-			if (columns.length < 3) continue; 
-			const [csvName, csvCost, csvUnit] = columns;
-			const parsedCost = parseFloat(csvCost) || 0;
-			Object.keys(ROOM_REPAIR_MAP).forEach(categoryKey => {
-				const category = ROOM_REPAIR_MAP[categoryKey];
-				if (category && category.Options) {
-					const matchedOption = category.Options.find(opt => opt.name.trim().toLowerCase() === csvName.toLowerCase());
-					if (matchedOption) {
-						matchedOption.cost = parsedCost;
-						if (csvUnit) matchedOption.unit = csvUnit;
-						updateCount++;
+	if (!csvText) return false;
+	const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== "");
+	if (lines.length < 2) return false; 
+	
+	let updateCount = 0;
+	
+	// Skip the header row (i = 0) and iterate over your data rows
+	for (let i = 1; i < lines.length; i++) {
+		const columns = lines[i].split(',').map(col => col.replace(/["']/g, "").trim());
+		
+		// 🛠️ THE INDEX ALIGNMENT HOOK:
+		// We leave the first array slot empty [ , ] to safely skip over the ID column!
+		// This assigns columns[1] to name, columns[2] to cost, columns[3] to unit, and columns[4] to subgroup [STEM].
+		const [, csvName, csvCost, csvUnit, csvSubgroup] = columns;
+		
+		// Validation gate: Ensure that at least a name and a cost cell exist on this row line
+		if (!csvName || !csvCost) continue; 
+		
+		const parsedCost = parseFloat(csvCost) || 0;
+		
+		// Cross-reference your master loop dictionary catalog
+		Object.keys(ROOM_REPAIR_MAP).forEach(categoryKey => {
+			const category = ROOM_REPAIR_MAP[categoryKey];
+			if (category && category.Options) {
+				// Scan room options matching your case-insensitive text rules
+				const matchedOption = category.Options.find(opt => opt.name.trim().toLowerCase() === csvName.toLowerCase());
+				
+				if (matchedOption) {
+					// 1. Overwrite the dictionary entries with your custom spreadsheet numbers
+					matchedOption.cost = parsedCost;
+					if (csvUnit) matchedOption.unit = csvUnit;
+					
+					// 2. DYNAMIC GROUP TRANSFER HOOK:
+					// Updates the structural trade category inside your target database memory object
+					if (csvSubgroup) {
+						// Overwrites the internal tracking label (handles 'group' or 'dataGroup' keys cleanly)
+						matchedOption.group = csvSubgroup;
+						matchedOption.dataGroup = csvSubgroup; 
 					}
+					updateCount++;
 				}
-			});
-		}
-		if (updateCount > 0) {
-			localStorage.setItem('dynamicRoomRepairCatalog', JSON.stringify(ROOM_REPAIR_MAP));
-			console.log(`✅ Dictionary Cached: Mapped and preserved ${updateCount} base parameters.`);
-		}
-		return updateCount > 0;
-	}
-	function handleMapCsvUpload(fileInputEl) {
-		const file = fileInputEl.files[0];
-		if (!file) return;
-		const reader = new FileReader();
-		// ASYNCHRONOUS ENGINE GATE: Fires the instant the file content finishes streaming [STEM]
-		reader.onload = function(e) {
-			const csvTextDataStream = e.target.result;
-			// 1. RUN THE SYNCHRONIZATION CALCULATOR: Cross-references your 3-column data rows
-			const isMapUpdated = updateRepairMapFromCsv(csvTextDataStream);
-			if (isMapUpdated) {
-				alert("Master price catalog updated successfully!");
-				// 2. RE-RENDER INTEGRATION: Forces your entire app dashboard to instantly redraw.
-				// This forces every open card dropdown menu to display your new custom pricing bounds!
-				if (typeof renderHouses === 'function') {
-					renderHouses();
-				}
-			} else {
-				alert("Sync aborted: No matching line-item names found inside your dictionary file.");
 			}
-			fileInputEl.value = ''; // Clear file element marker cache
-		};
-
-		reader.readAsText(file); // Initiate the web browser's data string stream reader pass [STEM]
+		});
 	}
+	
+	if (updateCount > 0) {
+		// Commit updates cleanly to browser persistent localStorage cache parameters
+		localStorage.setItem('dynamicRoomRepairCatalog', JSON.stringify(ROOM_REPAIR_MAP));
+		console.log(`✅ Dictionary Cached Successfully: Preserved ${updateCount} base parameters.`);
+	}
+	return updateCount > 0;
+}
+
+function handleMapCsvUpload(fileInputEl) {
+	const file = fileInputEl.files[0];
+	if (!file) return;
+	const reader = new FileReader();
+	
+	reader.onload = function(e) {
+		const csvTextDataStream = e.target.result;
+		
+		// 1. DISPATCH THE 5-COLUMN MATRIX SYNCHRONIZER
+		const isMapUpdated = updateRepairMapFromCsv(csvTextDataStream);
+		
+		if (isMapUpdated) {
+			alert("Master price catalog updated successfully!");
+			
+			// 2. RE-RENDER LIFE-CYCLE REFRESH: Forces your smartphone screens to instantly redraw dropdown items!
+			if (typeof renderHouses === 'function') {
+				renderHouses();
+			}
+		} else {
+			alert("Sync aborted: No matching line-item names found inside your dictionary file.");
+		}
+		fileInputEl.value = ''; // Clear file element marker cache
+	};
+
+	reader.readAsText(file); // Initiate the web browser's data string stream reader pass
+}
     //function saveHouses() {localStorage.setItem('groupHousesMedia', JSON.stringify(houses));renderHouses();}
 	function escapeHtml(text) { const div = document.createElement('div'); div.innerText = text; return div.innerHTML; }
 	function commitAndRefreshDatabase() {
