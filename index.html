@@ -100,40 +100,37 @@
 				width: 100% !important;
 				box-sizing: border-box;
 			}
-			/* LINE 1: Force room select and room number input to take up the full first line */
+			
+			/* LINE 1: Shatters the flex-squeezing limits and forces full horizontal usage */
 			.input-row-with-media {
 				display: grid !important;
-				/* Splits the line: Room selector gets 3 parts of space, number input gets 1 part */
-				grid-template-columns: 3fr 1fr !important; 
+				grid-template-columns: 1fr auto !important; /* 🎯 Room select dynamically consumes ALL remaining width, number stays compact! */
 				gap: 8px !important;
 				width: 100% !important;
+				max-width: 100% !important;
 				align-items: center;
 			}
+		
 			/* LINE 2 & 3 FORM OVERRIDES */
-			/* Push the Task Title text input box down to take up 100% of the next line */
 			[id^="taskTitleInput-"] {
 				width: 100% !important;
 				display: block !important;
 				margin-top: 2px;
 			}
-			/* Push the automatic task dictionary item selection options down to take up 100% of the line after that */
 			select[id^="lineItemInput-"] {
-				grid-column: span 1 !important; /* Clears grid constraints */
+				grid-column: span 1 !important; 
 				width: 100% !important;
 				display: block !important;
 				margin-top: 2px;
 			}
-			/* Clean up the budget price basis and amount needed parameters */
 			.budget-input-row {
 				display: grid !important;
-				grid-template-columns: 1fr 1fr !important; /* Split price and quantity side-by-side */
+				grid-template-columns: 1fr 1fr !important; 
 				gap: 10px !important;
-				width: 100% !important;
 				margin-top: 4px;
 			}
+		
 			/* 3. COMBINED TOUCH TARGET ACCESSIBILITY UPGRADE */
-			/* Thickets the footprint of ALL inputs, select boxes, dropdown elements, and buttons 
-			   to match official Apple & Google mobile accessibility guidelines (~48px min height). */
 			.mobile-responsive-analyzer-grid input, 
 			.house-card button, 
 			.house-card select,
@@ -146,29 +143,31 @@
 			[id^="taskNumSelect-"],
 			[id^="taskTitleInput-"],
 			[id^="lineItemInput-"] {
-				padding: 14px 10px !important; /* Thicker padding for fat-finger taps */
-				font-size: 15px !important;    /* Boost text clarity on small mobile displays */
+				padding: 14px 10px !important; 
+				font-size: 15px !important;    
 				height: auto !important;
 				min-height: 48px !important;   
 				box-sizing: border-box !important;
-				display: inline-block !important; /* Guarantees the browser cannot warp or crush visibility */
+				display: inline-block !important; 
 			}
+		
 			/* =========================================================================
-			   🎯 TARGETED UPDATE: EXPAND ONLY THE TASK ROOM DROPDOWN WIDTH
+			   🎯 RE-TARGETED ACCESSIBILITY WIDTH EXPANSION
 			   ========================================================================= */
-			/* This forces the selector to break out of desktop restrictions, override 
-			   internal white space limitations, and stretch wide across its layout block! */
+			/* Overrides the flex-squeezing rules, forcing ONLY the task room dropdown 
+			   to swell horizontally and perfectly consume the whitespace gap! */
 			#taskRoomSelect,
 			[id^="taskRoomSelect-"] {
 				width: 100% !important;
 				max-width: 100% !important;
-				min-width: 100% !important; /* Prevents any grid squeezing from shrinking it */
+				flex-grow: 1 !important; /* Multiplier commands it to stretch wide */
 			}
-			/* Securely pin the number input box size so it stays clean and compact on the right */
+			
+			/* Keeps the room number box small and standard on the right side of the card */
 			#taskNumSelect,
 			[id^="taskNumSelect-"] {
-				width: 100% !important;
-				max-width: 70px !important; /* Keeps the number box small and standard */
+				width: 70px !important;
+				max-width: 70px !important;
 			}
 		}
         .house-card {
@@ -294,20 +293,18 @@
 			padding: 10px; border-radius: 8px; border: 1px dashed #ccc; width: 100%;            
 		}
 		/* FORCE SELECT OPTIONS TO CLIP TEXT INSTEAD OF OVERLAPPING CARDS */
-		/* Locks select box to its parent row space and strictly prevents */
-		/* stretching past card boundaries. Adds clean '...' to long price descriptions*/
-		.task-input-group select{
+		.task-input-group select {
 			width: 100%; max-width: 100%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;
 		}
 		/* 3. ENSURE FLEX CONTAINER WRAPS ON MOBILE */
+		/* 🛠️ FIXED: Removed the stray duplicate closing brace that was breaking downstream stylesheet overrides! */
 		.input-row-with-media, .budget-input-row, .input-address-line {
-			display: flex; gap: 6px; align-items: center; width: 100%;}
+			display: flex; gap: 6px; align-items: center; width: 100%;
 		}
 		.input-row-with-media, .budget-input-row { flex-wrap: wrap; margin-bottom: 4px; margin-top: 4px;}
-		.budget-input-row span{color: #666;}
-		.budget-input-row input {background: var(--bg-color); width: 50px;flex-grow: 1;}
-		/* Clear numeric spinners up for a cleaner minimal look */
-		.budget-input-row input[type="text"] {background: #eee;cursor: not-allowed;}
+		.budget-input-row span {color: #666;}
+		.budget-input-row input {background: var(--bg-color); width: 50px; flex-grow: 1;}
+		.budget-input-row input[type="text"] {background: #eee; cursor: not-allowed;}
 		.input-address-line {
 			background: #fdfdfd; border: 1px solid #eee; padding: 10px; border-radius: 8px; margin-bottom: 15px;
 		}
