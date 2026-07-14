@@ -82,112 +82,78 @@
 		/* Snaps perfectly into 2 columns of 2 rows on small phone viewports */
 		/* TOUCH TARGET ACCESSIBILITY UPGRADE */
 		/* Increases sizing for finger-taps, making typing values effortless */
-        @media (max-width: 600px) {
-		/* 1. BLOW UP THE CHECKLIST CONTAINER LIST CELLS */
-		.super-group-list li,
-		li[class*="task-item-row"],
-		li[class*="completed"] {
-			display: flex !important;
-			flex-direction: column !important; /* Stack columns vertically into clean lines */
-			align-items: flex-start !important;
-			justify-content: flex-start !important;
-			gap: 10px !important;
-			padding: 16px 12px !important;    /* Spacious grid spacing inside the card */
-			background: #ffffff !important;
-			border-radius: 8px !important;
-			border: 1px solid #e2e8f0 !important; /* Box layout format looks like a mini-card */
-			margin-bottom: 12px !important;
-			width: 100% !important;
-			box-sizing: border-box !important;
-			position: relative !important;
+		@media (max-width: 600px) {
+			/* 1. ORIGINAL CORE OVERRIDES (Cards Grid & Deal Analyzer Box Layouts) */
+			.houses-grid {
+				grid-template-columns: 1fr !important; 
+				gap: 15px;
+			}
+			.mobile-responsive-analyzer-grid {
+				grid-template-columns: repeat(2, 1fr) !important; 
+				gap: 12px;
+			}
+			/* 2. TASK FORM CONTAINER RE-ALIGNMENT (THREE-ROW MOBILE UPGRADE) */
+			.task-input-group {
+				display: flex !important;
+				flex-direction: column !important; /* Stacks elements vertically into clean lines */
+				gap: 12px !important;
+				width: 100% !important;
+				box-sizing: border-box;
+			}
+			/* LINE 1: Force room select and room number input to take up the full first line */
+			.input-row-with-media {
+				display: grid !important;
+				/* Splits the line: Room selector gets 3 parts of space, number input gets 1 part */
+				grid-template-columns: 3fr 1fr !important; 
+				gap: 8px !important;
+				width: 100% !important;
+				align-items: center;
+			}
+			/* LINE 2 & 3 FORM OVERRIDES */
+			/* Push the Task Title text input box down to take up 100% of the next line */
+			[id^="taskTitleInput-"] {
+				width: 100% !important;
+				display: block !important;
+				margin-top: 2px;
+			}
+			/* Push the automatic task dictionary item selection options down to take up 100% of the line after that */
+			select[id^="lineItemInput-"] {
+				grid-column: span 1 !important; /* Clears grid constraints */
+				width: 100% !important;
+				display: block !important;
+				margin-top: 2px;
+			}
+			/* Clean up the budget price basis and amount needed parameters */
+			.budget-input-row {
+				display: grid !important;
+				grid-template-columns: 1fr 1fr !important; /* Split price and quantity side-by-side */
+				gap: 10px !important;
+				width: 100% !important;
+				margin-top: 4px;
+			}
+			/* 3. COMBINED TOUCH TARGET ACCESSIBILITY UPGRADE */
+			/* Thickets the footprint of ALL inputs, select boxes, dropdown elements, and buttons 
+			   to match official Apple & Google mobile accessibility guidelines (~48px min height). */
+			.mobile-responsive-analyzer-grid input, 
+			.house-card button, 
+			.house-card select,
+			.task-input-group select,
+			.task-input-group input,
+			.task-input-group button,
+			#taskRoomSelect,
+			#taskNumSelect,
+			[id^="taskRoomSelect-"],
+			[id^="taskNumSelect-"],
+			[id^="taskTitleInput-"],
+			[id^="lineItemInput-"] {
+				padding: 14px 10px !important; /* Thicker padding for fat-finger taps */
+				font-size: 15px !important;    /* Boost text clarity on small mobile displays */
+				height: auto !important;
+				min-height: 48px !important;   
+				box-sizing: border-box !important;
+				display: inline-block !important; /* Guarantees the browser cannot warp or crush visibility */
+			}
 		}
-		/* 2. TASK TITLE TEXT ROW (TOP TIER ROW PANEL) */
-		.super-group-list li > span:nth-of-type(1),
-		.task-details-pane,
-		.task-title-text {
-			display: flex !important;
-			align-items: flex-start !important;
-			gap: 8px !important;
-			width: 100% !important;
-			font-size: 16px !important; /* Large, bold font clarity on vertical displays */
-			line-height: 1.4 !important;
-			color: #1a202c !important;
-		}
-		/* Force the little inline trade text suffix to drop below cleanly if it overflows */
-		.line-item-text {
-			display: inline-block !important;
-			font-size: 14px !important;
-			color: #4a5568 !important;
-			font-weight: normal !important;
-		}
-		/* 3. COST CALCULATOR BADGE GRID (MIDDLE TIER ROW PANEL) */
-		.task-budget-badge,
-		.super-group-list li > span[class*="task-budget-badge"] {
-			display: block !important;
-			width: 100% !important;
-			font-size: 14px !important;
-			color: #2d3748 !important;
-			background: #f7fafc !important; /* Gives the math total a clean summary background panel */
-			padding: 8px 10px !important;
-			border-radius: 6px !important;
-			border-left: 3px solid #2ec4b6 !important; /* Highlighting bar emphasizes price totals */
-			box-sizing: border-box !important;
-			margin: 2px 0 !important;
-		}
-		.task-budget-badge strong {
-			font-size: 16px !important; /* Blow up the multiplied total price figure text size */
-			color: #000000 !important;
-		}
-		/* 4. ACTIONS & BADGES FOOTER BAR (BOTTOM TIER ROW PANEL) */
-		.assigned-room,
-		.super-group-list li > span[class*="assigned-room"] {
-			display: inline-block !important;
-			font-size: 12px !important;
-			padding: 6px 12px !important;
-			border-radius: 20px !important; /* Thick pill format */
-			background: #edf2f7 !important;
-			color: #2b6cb0 !important;
-			font-weight: bold !important;
-			margin: 4px 0 !important;
-		}
-		/* Group photo buttons and thumbnails into a clean bottom rows panel */
-		.task-pricing-pane,
-		.super-group-list li > label.upload-label,
-		.super-group-list li > div.task-img-wrapper {
-			margin-left: 0 !important;
-			width: auto !important;
-			display: inline-flex !important;
-			align-items: center !important;
-			gap: 8px !important;
-		}
-	
-		.super-group-list li > label.upload-label {
-			background: #edf2f7 !important;
-			border: 1px solid #cbd5e0 !important;
-			padding: 8px 14px !important; /* Large, easy-to-tap touch coordinates button */
-			border-radius: 6px !important;
-			font-size: 14px !important;
-			cursor: pointer !important;
-		}
-		/* 5. FLOATING DELETE CORNER BUTTON */
-		/* Absolute positions your delete marker button into the top right edge out of the way */
-		.super-group-list li > button.del-btn,
-		.super-group-list li > button[class*="pill-del-btn"] {
-			position: absolute !important;
-			top: 12px !important;
-			right: 12px !important;
-			padding: 8px !important;
-			font-size: 16px !important;
-			background: transparent !important;
-			color: #a0aec0 !important;
-			border: none !important;
-		}
-		/* Adjust the image thumbnail widths to prevent layout distortion */
-		.task-img-wrapper img, .thumb-preview {
-			max-height: 60px !important;
-			border-radius: 4px !important;
-		}
-	}
         .house-card {
             background: var(--card-bg); padding: 18px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column;
 			box-sizing: border-box; /* Crucial: Ensures padding doesn't stretch dimensions out of bounds */
